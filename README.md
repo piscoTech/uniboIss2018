@@ -1,0 +1,53 @@
+# Ingegneria dei Sistemi Software M
+
+Repository del tema finale del corso di Ingegneria dei Sistemi Software M
+
+## Setup iniziale (macOS)
+
+Installa i due plug-in per QActor di Eclipse forniti dal prof, Gradle e Node.js, quindi installa MongoDB e Mosquitto via HomeBrew usando
+
+```bash
+brew install mosquitto
+brew install mongodb
+```
+
+Crea un workspace Eclipse nella root di questa repository e importa i due progetti `it.unibo.finaltask` e `it.unibo.frontend`. Apri un terminale nella cartella `it.unibo.finaltask` ed esegui
+
+```bash
+gradle -b build_ctxFinalSysAnalysis.gradle eclipse
+```
+
+Potrebbero essere necessarie più esecuzioni di questo comando, nel caso apri la configurazione del _Build Path_ e assicurati che non ci siano cartelle duplicate. Apri la configurazione del _Build Path_ di `it.unibo.frontend` ed elimina tutte le cartelle dal tab _Source_. A questo punto Eclipse non dovrebbe segnalare alcun errore, solo qualche warning.
+
+Per avviare facilmente i vari server creiamo degli alias inserendo queste righe nel file `~/.bash_profile`
+
+```bahs
+alias mosquitto='/usr/local/opt/mosquitto/sbin/mosquitto -c /usr/local/etc/mosquitto/mosquitto.conf'
+alias mongodb='mongod --dbpath "/my/custom/path/to/mongodb"'
+```
+
+Per il secondo alias assicurati di aver creato la cartella nel percorso specificiato.
+
+Apri un terminale nella cartella `nodeCode/frontend` quindi installa tutti i package richiesti da Node.js usando il comando
+
+```bash
+npm install
+```
+
+### Xcode configuration
+_Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – Mock.app` la sua configurazione viene omessa, ma l'unica cosa da fare è scaricare i pacchetti usando CocoaPods._
+
+## Avvio del sistema
+
+1. Avvia Mosquitto usando l'alias `mosquitto`
+2. Avvia il robot virtuale usando `startRobot.sh`
+3. Avvia MongoDB usando l'alias `mongodb`
+4. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
+5. Avvia i mock per l'hardware avviando `ISS 2018 – Mock.app`
+6. Avvia il frontend server usando `startFrontEnd.sh`
+
+È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000.
+
+## Commit
+
+Fai attenzione che Eclipse non modifichi i file `.gitignore` eliminando la riga `.classpath`: i file `.classpath` _**NON**_ devono essere committati, questi contengono infatti la configurazione del _Build Path_ e vanno configurati inizialmente come specificato sopra. Se Eclipse propone questa modifica del `.gitignore` ripristina il file alla versione precedente.

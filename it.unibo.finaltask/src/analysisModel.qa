@@ -1,0 +1,61 @@
+// Model after the requirement analysis
+System finalSys2018
+
+Event usercmd		: usercmd(CMD)						// From web gui
+Event sonar			: sonar(SONAR, TARGET, DISTANCE)	// From (virtual) sonar
+Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
+
+Dispatch moveRobot : usercmd(CMD)
+Dispatch startAppl : startAppl(X)
+
+pubSubServer "tcp://localhost:1883"
+
+Context ctxFinalSysAnalysis ip [host="localhost" port=8010]
+EventHandler evh for usercmd -pubsub {
+	forwardEvent robot -m moveRobot
+};
+
+QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
+	Plan init normal [
+		println("Application ready")
+	]
+	switchTo listen
+	
+	Plan listen [] transition stopAfter 3600000
+		whenMsg startAppl -> startLogic,
+		whenEvent sonar -> printEv,
+		whenEvent sonarDetect -> printEv
+	finally repeatPlan
+		
+	Plan startLogic resumeLastPlan [
+		println("Application started...");
+		delay 2000;
+		println("Application done!")
+	]
+	
+	Plan printEv resumeLastPlan [
+		printCurrentEvent
+	]
+}
+
+QActor robot context ctxFinalSysAnalysis -pubsub {
+	Plan init normal [
+		println("Robot started");
+		javaRun it.unibo.robot.pfrs.mbotConnTcp.initClientConn()
+	]
+	switchTo listen
+	
+	Plan listen [] transition stopAfter 3600000
+		whenMsg moveRobot -> execMove
+	finally repeatPlan
+		
+	Plan execMove resumeLastPlan [
+		printCurrentMessage;    
+		onMsg moveRobot : usercmd( robotgui(h(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotStop();
+		onMsg moveRobot : usercmd( robotgui(w(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotForward();
+		onMsg moveRobot : usercmd( robotgui(s(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward();
+		onMsg moveRobot : usercmd( robotgui(a(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
+		onMsg moveRobot : usercmd( robotgui(d(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
+		onMsg moveRobot : usercmd( robotgui(x(X)) ) -> forward webguiexecutor -m startAppl : startAppl(go)
+	]
+}

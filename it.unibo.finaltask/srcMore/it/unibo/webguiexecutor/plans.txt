@@ -1,0 +1,7 @@
+plan(1,init, sentence(true,move(print("Application ready")),'','' ))
+plan(1,startLogic, sentence(true,move(print("Application started...")),'','' ))
+plan(2,startLogic, sentence(true,delay( 2000) ,'','' ))
+plan(3,startLogic, sentence(true,move(print("Application done!")),'','' ))
+plan(4,startLogic, sentence(true,move(resumeplan),'','' ))
+plan(1,printEv, sentence(true,printCurrentEvent(false),'','' ))
+plan(2,printEv, sentence(true,move(resumeplan),'','' ))
