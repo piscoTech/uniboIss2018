@@ -22,7 +22,7 @@ var flash;			// To be set later for AUTH;
 
 var app              = express();
 
-var externalActuator = false; // When true, the application logic is external to the server;
+var externalActuator = true; // When true, the application logic is external to the server;
 var withAuth         = true;
 
 // view engine setup;

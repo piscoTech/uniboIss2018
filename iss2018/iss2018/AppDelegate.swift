@@ -10,6 +10,8 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
+	
+	weak var mainController: ViewController!
 
 	func applicationDidFinishLaunching(_ aNotification: Notification) {
 		// Insert code here to initialize your application
@@ -20,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 	}
 
 	func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+		mainController.disconnect()
 		return true
 	}
 	

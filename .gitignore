@@ -28,6 +28,7 @@ DerivedData
 *.xctimeline
 .metadata/
 .recommenders/
+Pods/
 
 # Java
 *.class
@@ -68,6 +69,7 @@ bin
 *.log
 *.swp
 *.bak
+.lck
 
 docker
 sites

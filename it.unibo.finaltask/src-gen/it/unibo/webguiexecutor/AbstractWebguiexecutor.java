@@ -59,6 +59,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	stateTab.put("listen",listen);
 	    	stateTab.put("startLogic",startLogic);
 	    	stateTab.put("printEv",printEv);
+	    	stateTab.put("handleSensor",handleSensor);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -95,8 +96,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	String myselfName = "listen";  
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
-	          new StateFun[]{stateTab.get("startLogic"), stateTab.get("printEv"), stateTab.get("printEv") }, 
-	          new String[]{"true","M","startAppl", "true","E","sonar", "true","E","sonarDetect" },
+	          new StateFun[]{stateTab.get("startLogic"), stateTab.get("printEv"), stateTab.get("printEv"), stateTab.get("handleSensor") }, 
+	          new String[]{"true","M","startAppl", "true","E","sonar", "true","E","sonarDetect", "true","E","sensorEvent" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
@@ -111,9 +112,17 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	temporaryStr = "\"Application started...\"";
 	    	println( temporaryStr );  
 	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(1000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "startLogic";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(TARGET,PAYLOAD)","ctrlEvent(hueLamp,on)", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
+	    	//delay  ( no more reactive within a plan)
 	    	aar = delayReactive(2000,"" , "");
 	    	if( aar.getInterrupted() ) curPlanInExec   = "startLogic";
 	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(TARGET,PAYLOAD)","ctrlEvent(hueLamp,off)", guardVars ).toString();
+	    	emit( "ctrlEvent", temporaryStr );
 	    	temporaryStr = "\"Application done!\"";
 	    	println( temporaryStr );  
 	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
@@ -134,6 +143,30 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//printEv
+	    
+	    StateFun handleSensor = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("handleSensor",-1);
+	    	String myselfName = "handleSensor";  
+	    	//onEvent 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("sensorEvent(O,P)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("sensorEvent") && 
+	    		pengine.unify(curT, Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg = "sensorEvent(O,P)";
+	    			/* Print */
+	    			parg =  updateVars( Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)"), 
+	    			                    Term.createTerm("sensorEvent(O,P)"), 
+	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) println( parg );
+	    	}
+	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
+	    }catch(Exception e_handleSensor){  
+	    	 println( getName() + " plan=handleSensor WARNING:" + e_handleSensor.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//handleSensor
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor

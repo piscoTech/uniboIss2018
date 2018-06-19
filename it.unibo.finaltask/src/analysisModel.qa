@@ -5,8 +5,11 @@ Event usercmd		: usercmd(CMD)						// From web gui
 Event sonar			: sonar(SONAR, TARGET, DISTANCE)	// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
-Dispatch moveRobot : usercmd(CMD)
-Dispatch startAppl : startAppl(X)
+Dispatch moveRobot	: usercmd(CMD)
+Dispatch startAppl	: startAppl(X)
+
+Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
+Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
 
 pubSubServer "tcp://localhost:1883"
 
@@ -24,17 +27,27 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	Plan listen [] transition stopAfter 3600000
 		whenMsg startAppl -> startLogic,
 		whenEvent sonar -> printEv,
-		whenEvent sonarDetect -> printEv
+		whenEvent sonarDetect -> printEv,
+		whenEvent sensorEvent -> handleSensor
 	finally repeatPlan
 		
 	Plan startLogic resumeLastPlan [
 		println("Application started...");
+		delay 1000;
+		emit ctrlEvent : ctrlEvent(hueLamp,on);
 		delay 2000;
+		emit ctrlEvent : ctrlEvent(hueLamp,off);
 		println("Application done!")
 	]
 	
 	Plan printEv resumeLastPlan [
 		printCurrentEvent
+	]
+	
+	Plan handleSensor resumeLastPlan [
+		// O = thermometer	=> P = real number representing the current temperature
+		// O = clock 		=> P = positive integer representing the number of seconds from midnight (00:00:00 = 0, 23:59:59 = 3599, 10:05:06 = 10*3600 + 5*60 + 6)
+		onEvent sensorEvent : sensorEvent(O, P) -> println(sensorEvent(O, P))
 	]
 }
 
