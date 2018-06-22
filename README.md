@@ -26,9 +26,9 @@ alias mosquitto='/usr/local/opt/mosquitto/sbin/mosquitto -c /usr/local/etc/mosqu
 alias mongodb='mongod --dbpath "/my/custom/path/to/mongodb"'
 ```
 
-Per il secondo alias assicurati di aver creato la cartella nel percorso specificiato.
+Per il secondo alias assicurati di aver creato la cartella nel percorso specificato.
 
-Apri un terminale nella cartella `nodeCode/frontend` quindi installa tutti i package richiesti da Node.js usando il comando
+Installa tutti i package richiesti da Node.js nelle cartelle `it.unibo.frontend/nodeCode/frontend`, `VirtualRobotJS/WebGLScene` e `VirtualRobotJS/server` usando, in ognuna di queste, il comando
 
 ```bash
 npm install
