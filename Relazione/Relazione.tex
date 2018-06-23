@@ -35,9 +35,21 @@ L'attività di pulizia deve terminare se:
 \section{Analisi del problema e scelte progettuali}
 Analizzando i progetti realizzati e presentati a lezione, si ha già a disposizione la console, realizzata come un frontend server in tecnologia Node.js. Essa presenta l'autenticazione degli utenti attraverso una coppia username-password come credenziali di accesso ed i comandi per pilotare il robot nelle sue azioni di base. Possono essere aggiunti facilmente i pulsanti per inviare i comandi di \texttt{START} e \texttt{STOP}.
 
-Il sistema che si deve realizzare è distribuito, pertanto è necessario individuare un sistema di comunicazione tra le parti, ossia il frontend, il robot, i sensori e i sonar. Ciò può essere individuato nello scambio di eventi supportato dall'architettura MQTT già integrata all'interno della console che si ha a disposizione. 
+Il sistema che si deve realizzare è distribuito, pertanto è necessario individuare un sistema di comunicazione tra le parti, ossia il frontend, il robot, i sensori e i sonar. Ciò può essere individuato nello scambio di eventi supportato dall'infrastruttura MQTT già integrata all'interno della console che si ha a disposizione. 
 
 Nella scelta di lavorare all'interno di un ambiente virtuale, si ha a disposizione il progetto ConfigurableThreejsApp, che offre l'ambiente virtuale, dotato dei sonar, ed il robot virtuale. Esso è accessibile attraverso un'interfaccia web e controllabile attraverso una socket TCP.
+
+Per realizzare un primo prototipo del robot con la logica applicativa che controlla l'attività di pulizia ci si appoggia a un linguaggio che permette di scrivere modelli eseguibili per garantire una rapida prototipazione. Questo linguaggio viene individuato in QActor, che permette anche di integrarsi nativamente con un'infrastruttura a scambio di eventi via MQTT e lavorando su una base Java permette facilmente di avere accesso a delle API per gestire le socket.
+
+Dato che il robot non comunica nativamente via eventi occorre realizzare un attore, con funzione di adapter, che intercetti i comandi di base inviati dalla console, o dalla logica applicativa durante la pulizia, per pilotare il robot e li traduca in un flusso di dati TCP che il robot possa comprendere. Questo adapter si occuperà anche di ricevere le segnalazioni dei sonar e tradurle in eventi affinché gli altri attori del sistema possano esserne a conoscenza.
+
+Per gestire la logica applicativa si rende necessario un attore dedicato che riceva i comandi di \texttt{START} e \texttt{STOP} per controllare l'avvio e la terminazione dell'attività di pulizia, la gestisca e controlli che le condizioni specificate per operare siano soddisfatte.
+
+Per ricevere informazioni su temperatura ambientale e ora corrente occorre realizzare due sensori, un termometro e un orologio, che possano inviare le rispettive informazioni. Poiché queste interessano solamente l'attività di pulizia automatica, possono essere intercettate solamente dall'attore che si occupa della logica applicativa e usarle per aggiornare lo stato interno e terminare, se è il caso, l'attività di pulizia.
+
+Non avendo a disposizione una realizzazione, fisica o virtuale, in grado di interagire in qualche modo con il sistema per come lo si è individuato finora, si è scelto di realizzarli da zero come sensori virtuali direttamente integrati con l'infrastruttura MQTT. È stato realizzato anche un mock per la lampada HUE per poter testare il funzionamento del robot quando quella fisica non è accessibile. Questo mock interagisce direttamente con gli eventi di controllo scambiati via MQTT, ma per controllare quella fisica occorre realizzare un adapter che intercetti gli aventi e li traduca in opportune chiamate RESTful.
+
+Per mantenere lo stato del sistema ci si può appoggiare al supporto nativo del Prolog da parte di QActor per modellare una base di conoscenza che tenga traccia di temperatura e ora corrente, se si sta facendo la pulizia e qualunque altra informazione utile come la soglia di temperatura e l'intervallo di tempo in cui si può lavorare.
 
 \section{Log}
 
