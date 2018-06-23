@@ -9,6 +9,11 @@
 \maketitletoc
 
 \section{Analisi dei requisiti}
+Il robot DDR è un dispositivo in grado di muoversi in un ambiente attraverso comandi remoti per avanzare, indietreggiare o girare di \ang{90} a destra o sinistra oltre al comando di stop. L'ambiente in cui dovrà muoversi è una stanza quadrata che può essere sia fisica che virtuale. La stanza è dotata di due sonar: uno, detto \texttt{sonar1}, è posto in alto a sinistra e rivolto verso il basso, l'altro, detto \texttt{sonar2}, è posto in basso a destra rivolto verso sinistra.
+
+Il robot dovrà muoversi da una posizione iniziale intercettata da \texttt{sonar1}, detta \texttt{start-point}, e muoversi lungo la stanza fino alla posizione finale, detta \texttt{end-point}, intercettata da \texttt{sonar2} mentre pulisce il pavimento, \textit{richiedendo quindi di passare sulla maggior superficie possibile del pavimento}.
+
+Per \textit{sonar} si intende un dispositivo, reale o virtuale, che sfrutta una qualche tecnologia per individuare quando il robot passa davanti a questo.
 
 \section{Analisi del problema e scelte progettuali}
 
