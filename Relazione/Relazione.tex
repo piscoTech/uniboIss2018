@@ -15,7 +15,29 @@ Il robot dovrà muoversi da una posizione iniziale intercettata da \texttt{sonar
 
 Per \textit{sonar} si intende un dispositivo, reale o virtuale, che sfrutta una qualche tecnologia per individuare quando il robot passa davanti a questo.
 
+Il robot è controllato attraverso un'interfaccia grafica, detta \texttt{console}, accessibile ad un utente umano autorizzato dall'inserimento di credenziali riconosciute dal sistema. L'attività di pulizia è innescata dall'invio del comando \texttt{START} da parte dell'utente autorizzato che controlla il robot. Ciò avviene mediante un qualunque dispositivo in grado di connettersi al robot.
+
+Il robot lavora solo se la temperatura dell'ambiente non è superiore ad una soglia prefissata e se l'ora corrente è all'interno di un intervallo prefissato. Il robot è dotato di un sensore di temperatura e di un orologio per verificare queste condizioni.
+
+Durante l'attività di pulizia, il robot deve far lampeggiare una lampada a led HUE, ovvero una lampadina, connessa alla rete, che può essere controllata in luminosità, accensione, spegnimento e colore attraverso API RESTful.
+
+Durante l'attività di pulizia, il robot deve inoltre aver cura di evitare ostacoli fissi presenti nella stanza.
+
+L'attività di pulizia deve terminare se:
+\begin{itemize}
+\item l'utente autorizzato invia il comando \texttt{STOP} dalla console;
+\item la temperatura dell'ambiente supera la soglia prefissata;
+\item l'ora corrente esce dall'intervallo prefissato;
+\item il robot non riesce, in alcun modo, ad evitare un certo ostacolo;
+\item il robot ha terminato l'attività di pulizia, ovvero raggiunge la posizione finale.
+\end{itemize}
+
 \section{Analisi del problema e scelte progettuali}
+Analizzando i progetti realizzati e presentati a lezione, si ha già a disposizione la console, realizzata come un frontend server in tecnologia Node.js. Essa presenta l'autenticazione degli utenti attraverso una coppia username-password come credenziali di accesso ed i comandi per pilotare il robot nelle sue azioni di base. Possono essere aggiunti facilmente i pulsanti per inviare i comandi di \texttt{START} e \texttt{STOP}.
+
+Il sistema che si deve realizzare è distribuito, pertanto è necessario individuare un sistema di comunicazione tra le parti, ossia il frontend, il robot, i sensori e i sonar. Ciò può essere individuato nello scambio di eventi supportato dall'architettura MQTT già integrata all'interno della console che si ha a disposizione. 
+
+Nella scelta di lavorare all'interno di un ambiente virtuale, si ha a disposizione il progetto ConfigurableThreejsApp, che offre l'ambiente virtuale, dotato dei sonar, ed il robot virtuale. Esso è accessibile attraverso un'interfaccia web e controllabile attraverso una socket TCP.
 
 \section{Log}
 
