@@ -10,6 +10,7 @@ Dispatch startAppl	: startAppl(X)
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
+Event lampEvent		: lampEvent(VERB, INFO)
 
 pubSubServer "tcp://localhost:1883"
 
@@ -70,5 +71,25 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 		onMsg moveRobot : usercmd( robotgui(a(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
 		onMsg moveRobot : usercmd( robotgui(d(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
 		onMsg moveRobot : usercmd( robotgui(x(X)) ) -> forward webguiexecutor -m startAppl : startAppl(go)
+	]
+}
+
+QActor lampadapter context ctxFinalSysAnalysis -pubsub {
+	Plan init normal [
+		println("Lamp Adapter started");
+		javaRun it.unibo.frontend.hueClient.setQaCtx("lampEvent")
+	]
+	switchTo listen
+	
+	Plan listen [] transition stopAfter 3600000
+		whenEvent ctrlEvent -> ctrlLamp
+	finally repeatPlan
+	
+	Plan ctrlLamp resumeLastPlan [
+		printCurrentEvent;
+		onEvent ctrlEvent : ctrlEvent(hueLamp,off)
+			-> javaRun it.unibo.frontend.hueClient.sendPut("{'on':false}", "lights/2/state");
+		onEvent ctrlEvent : ctrlEvent(hueLamp,on)
+			-> javaRun it.unibo.frontend.hueClient.sendPut("{'on':true, 'bri':167}", "lights/2/state")
 	]
 }

@@ -7,6 +7,8 @@ qactor( webguiexecutor , ctxfinalsysanalysis, "it.unibo.webguiexecutor.MsgHandle
 qactor( webguiexecutor_ctrl , ctxfinalsysanalysis, "it.unibo.webguiexecutor.Webguiexecutor"   ). %%control-driven 
 qactor( robot , ctxfinalsysanalysis, "it.unibo.robot.MsgHandle_Robot"   ). %%store msgs 
 qactor( robot_ctrl , ctxfinalsysanalysis, "it.unibo.robot.Robot"   ). %%control-driven 
+qactor( lampadapter , ctxfinalsysanalysis, "it.unibo.lampadapter.MsgHandle_Lampadapter"   ). %%store msgs 
+qactor( lampadapter_ctrl , ctxfinalsysanalysis, "it.unibo.lampadapter.Lampadapter"   ). %%control-driven 
 %%% -------------------------------------------
 eventhandler(evh,ctxfinalsysanalysis,"it.unibo.ctxFinalSysAnalysis.Evh","usercmd").  
 %%% -------------------------------------------
