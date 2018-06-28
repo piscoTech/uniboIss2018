@@ -11,24 +11,28 @@
 \section{Analisi dei requisiti}
 Il robot DDR è un dispositivo in grado di muoversi in un ambiente attraverso comandi remoti per avanzare, indietreggiare o girare di \ang{90} a destra o sinistra oltre al comando di stop. L'ambiente in cui dovrà muoversi è una stanza quadrata che può essere sia fisica che virtuale. La stanza è dotata di due sonar: uno, detto \texttt{sonar1}, è posto in alto a sinistra e rivolto verso il basso, l'altro, detto \texttt{sonar2}, è posto in basso a destra rivolto verso sinistra.
 
-Il robot dovrà muoversi da una posizione iniziale intercettata da \texttt{sonar1}, detta \texttt{start-point}, e muoversi lungo la stanza fino alla posizione finale, detta \texttt{end-point}, intercettata da \texttt{sonar2} mentre pulisce il pavimento, \textit{richiedendo quindi di passare sulla maggior superficie possibile del pavimento}.
+Il robot dovrà muoversi da una posizione iniziale intercettata da \texttt{sonar1}, detta \texttt{start-point}, e muoversi lungo la stanza fino alla posizione finale, detta \texttt{end-point}, intercettata da \texttt{sonar2}, pulendo la maggior superficie possibile di pavimento. I punti iniziale e finale non sono individuati solo dai sonar, ma anche dai punti a loro vicini.
 
 Per \textit{sonar} si intende un dispositivo, reale o virtuale, che sfrutta una qualche tecnologia per individuare quando il robot passa davanti a questo.
 
-Il robot è controllato attraverso un'interfaccia grafica, detta \texttt{console}, accessibile ad un utente umano autorizzato dall'inserimento di credenziali riconosciute dal sistema. L'attività di pulizia è innescata dall'invio del comando \texttt{START} da parte dell'utente autorizzato che controlla il robot. Ciò avviene mediante un qualunque dispositivo in grado di connettersi al robot.
+Il robot è controllato attraverso un'interfaccia grafica, detta \texttt{console}, accessibile ad un utente umano autorizzato dall'inserimento di credenziali riconosciute dal sistema. L'attività di pulizia è innescata dall'invio del comando \texttt{START} da parte dell'utente autorizzato che controlla il robot. Ciò avviene mediante un qualunque dispositivo in grado di connettersi al robot. Se il robot non è rilevato (entro una certa distanza) dal sonar 1 dopo l'invio del comando \texttt{START}, il robot non parte con l'attività di pulizia automatica. 
+
+L'utente può comandare solo \texttt{START} o \texttt{STOP}, e non deve disporre di comandi manuali per pilotare il robot.
 
 Il robot lavora solo se la temperatura dell'ambiente non è superiore ad una soglia prefissata e se l'ora corrente è all'interno di un intervallo prefissato. Il robot è dotato di un sensore di temperatura e di un orologio per verificare queste condizioni.
 
 Durante l'attività di pulizia, il robot deve far lampeggiare una lampada a led Hue, ovvero una lampadina, connessa alla rete, che può essere controllata in luminosità, accensione, spegnimento e colore attraverso API RESTful.
 
-Durante l'attività di pulizia, il robot deve inoltre aver cura di evitare ostacoli fissi presenti nella stanza.
+Durante l'attività di pulizia, il robot deve inoltre aver cura di evitare ostacoli fissi presenti nella stanza. Si suppone che non vi siano ostacoli posti di fronte (entro una certa soglia) ai due sonar.
+
+Il robot deve fermarsi solo quando ha finito di pulire tutto.
 
 L'attività di pulizia deve terminare se:
 \begin{itemize}
 \item l'utente autorizzato invia il comando \texttt{STOP} dalla console;
 \item la temperatura dell'ambiente supera la soglia prefissata;
 \item l'ora corrente esce dall'intervallo prefissato;
-\item il robot non riesce, in alcun modo, ad evitare un certo ostacolo;
+\item il robot non riesce, in alcun modo, ad evitare un certo ostacolo (questo ostacolo insuperabile è un bastone orizzontale o verticale della lunghezza della stanza);
 \item il robot ha terminato l'attività di pulizia, ovvero raggiunge la posizione finale.
 \end{itemize}
 
