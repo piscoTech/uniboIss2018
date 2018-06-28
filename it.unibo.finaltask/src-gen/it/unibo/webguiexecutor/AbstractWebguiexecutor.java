@@ -58,6 +58,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	stateTab.put("init",init);
 	    	stateTab.put("listen",listen);
 	    	stateTab.put("startLogic",startLogic);
+	    	stateTab.put("clean",clean);
 	    	stateTab.put("printEv",printEv);
 	    	stateTab.put("handleSensor",handleSensor);
 	    }
@@ -77,6 +78,9 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
 	    	String myselfName = "init";  
+	    	parg = "consult(\"./resourceModel.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = "\"Application ready\"";
 	    	println( temporaryStr );  
 	     connectToMqttServer("tcp://localhost:1883");
@@ -109,28 +113,64 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("startLogic",-1);
 	    	String myselfName = "startLogic";  
-	    	temporaryStr = "\"Application started...\"";
-	    	println( temporaryStr );  
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "startLogic";
-	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(TARGET,PAYLOAD)","ctrlEvent(hueLamp,on)", guardVars ).toString();
-	    	emit( "ctrlEvent", temporaryStr );
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(2000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "startLogic";
-	    	if( ! aar.getGoon() ) return ;
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "ctrlEvent(TARGET,PAYLOAD)","ctrlEvent(hueLamp,off)", guardVars ).toString();
-	    	emit( "ctrlEvent", temporaryStr );
-	    	temporaryStr = "\"Application done!\"";
-	    	println( temporaryStr );  
-	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
+	    	//onMsg 
+	    	setCurrentMsgFromStore(); 
+	    	curT = Term.createTerm("startAppl(go)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("startAppl") && 
+	    		pengine.unify(curT, Term.createTerm("startAppl(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="shouldStart";
+	    		/* AddRule */
+	    		parg = updateVars(Term.createTerm("startAppl(X)"),  Term.createTerm("startAppl(go)"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) addRule(parg);	    		  					
+	    	}
+	    	//switchTo clean
+	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
+	              "clean",false, true, " ??shouldStart"); 
 	    }catch(Exception e_startLogic){  
 	    	 println( getName() + " plan=startLogic WARNING:" + e_startLogic.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//startLogic
+	    
+	    StateFun clean = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("clean",-1);
+	    	String myselfName = "clean";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?validConditions" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"Application started...\"";
+	    	println( temporaryStr );  
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(1000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "clean";
+	    	if( ! aar.getGoon() ) return ;
+	    	parg = "changeModelItem(hueLamp,on)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "clean";
+	    	if( ! aar.getGoon() ) return ;
+	    	parg = "changeModelItem(hueLamp,off)";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = "\"Application done!\"";
+	    	println( temporaryStr );  
+	    	};//actionseq
+	    	}
+	    	else{ temporaryStr = "\"Sensors conditions invalid, cannot start\"";
+	    	println( temporaryStr );  
+	    	}
+	    	//switchTo listen
+	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
+	              "listen",false, false, null); 
+	    }catch(Exception e_clean){  
+	    	 println( getName() + " plan=clean WARNING:" + e_clean.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//clean
 	    
 	    StateFun printEv = () -> {	
 	    try{	
@@ -154,12 +194,23 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	if( currentEvent != null && currentEvent.getEventId().equals("sensorEvent") && 
 	    		pengine.unify(curT, Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg = "sensorEvent(O,P)";
-	    			/* Print */
+	    			String parg="changeModelItem(O,P)";
+	    			/* PHead */
 	    			parg =  updateVars( Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)"), 
 	    			                    Term.createTerm("sensorEvent(O,P)"), 
 	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) println( parg );
+	    				if( parg != null ) {
+	    				    aar = QActorUtils.solveGoal(this,myCtx,pengine,parg,"",outEnvView,86400000);
+	    					//println(getName() + " plan " + curPlanInExec  +  " interrupted=" + aar.getInterrupted() + " action goon="+aar.getGoon());
+	    					if( aar.getInterrupted() ){
+	    						curPlanInExec   = "handleSensor";
+	    						if( aar.getTimeRemained() <= 0 ) addRule("tout(demo,"+getName()+")");
+	    						if( ! aar.getGoon() ) return ;
+	    					} 			
+	    					if( aar.getResult().equals("failure")){
+	    						if( ! aar.getGoon() ) return ;
+	    					}else if( ! aar.getGoon() ) return ;
+	    				}
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
 	    }catch(Exception e_handleSensor){  

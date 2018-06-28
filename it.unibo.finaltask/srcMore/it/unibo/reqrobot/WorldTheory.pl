@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor webguiexecutor
+% WorldTheory.pl for actor reqrobot
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatuwebguiexecutor).	%%old version (deprecated)
-actorobj(qatuwebguiexecutor).	%% see registerActorInProlog18 in QActor
+myname(qatureqrobot).	%%old version (deprecated)
+actorobj(qatureqrobot).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor webguiexecutor
+%  TuProlo FEATURES of the QActor reqrobot
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of webguiexecutor" ). 
+%% :- stdout <- println(  "hello from world theory of reqrobot" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,19 +140,8 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about webguiexecutor
+%  User static rules about reqrobot
 %------------------------------------------------- 
-tempThreshold( 25).
-timeInterval( 32400,39600).
-model( thermometer,20).
-model( clock,36300).
-model( hueLamp,off).
-validConditions:-model( thermometer,T),model( clock,H),tempThreshold( Tmax),timeInterval( Hmin,Hmax),eval( le,T,Tmax),eval( ge,H,Hmin),eval( le,H,Hmax).
-changedModelAction( thermometer,_):-validConditions, ! .
-changedModelAction( thermometer,_):-emitEvent( startAppl,startAppl( halt)).
-changedModelAction( clock,_):-validConditions, ! .
-changedModelAction( clock,_):-emitEvent( startAppl,startAppl( halt)).
-changedModelAction( hueLamp,V):-emitEvent( ctrlEvent,ctrlEvent( hueLamp,V)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

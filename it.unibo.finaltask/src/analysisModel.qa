@@ -1,16 +1,16 @@
 // Model after the requirement analysis
 System finalSys2018
 
-Event usercmd		: usercmd(CMD)						// From web gui
-Event sonar			: sonar(SONAR, TARGET, DISTANCE)	// From (virtual) sonar
+Event usercmd		: usercmd(CMD)					// From web gui
+Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
 Dispatch moveRobot	: usercmd(CMD)
-Dispatch startAppl	: startAppl(X)
+Dispatch startAppl	: startAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
-Event lampEvent		: lampEvent(VERB, INFO)
+Event lampEvent		: lampEvent(VERB, INFO)			// Feedback for controlling the real lamp
 
 pubSubServer "tcp://localhost:1883"
 
@@ -20,7 +20,29 @@ EventHandler evh for usercmd -pubsub {
 };
 
 QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
+	Rules {
+		tempThreshold(25).			// 25°C
+		timeInterval(32400, 39600).	// 9:00:00 - 11:00:00
+		
+		model(thermometer, 20).	// 20°C
+		model(clock, 36300). 	// 10:05:00
+		model(hueLamp, off).
+		
+		validConditions :-
+			model(thermometer, T), model(clock, H), tempThreshold(Tmax), timeInterval(Hmin, Hmax),
+			eval(le, T, Tmax), eval(ge, H, Hmin), eval(le, H, Hmax).
+ 		
+		changedModelAction(thermometer, _) :- validConditions, !. 
+		changedModelAction(thermometer, _) :- emitEvent(startAppl, startAppl(halt)).
+		
+		changedModelAction(clock, _) :- validConditions, !. 
+		changedModelAction(clock, _) :- emitEvent(startAppl, startAppl(halt)).
+					     
+		changedModelAction(hueLamp, V) :- emitEvent(ctrlEvent, ctrlEvent(hueLamp, V)).
+	}
+	
 	Plan init normal [
+		demo consult('./resourceModel.pl');
 		println("Application ready")
 	]
 	switchTo listen
@@ -33,13 +55,22 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	finally repeatPlan
 		
 	Plan startLogic resumeLastPlan [
-		println("Application started...");
-		delay 1000;
-		emit ctrlEvent : ctrlEvent(hueLamp,on);
-		delay 2000;
-		emit ctrlEvent : ctrlEvent(hueLamp,off);
-		println("Application done!")
+		onMsg startAppl : startAppl(go) -> addRule shouldStart
 	]
+	switchTo [?? shouldStart] clean
+	
+	Plan clean [
+		[!? validConditions] {
+			println("Application started...");
+			delay 1000;
+			demo changeModelItem(hueLamp, on);
+			delay 2000;
+			demo changeModelItem(hueLamp, off);
+			println("Application done!")
+		} else
+			println("Sensors conditions invalid, cannot start")
+	]
+	switchTo listen
 	
 	Plan printEv resumeLastPlan [
 		printCurrentEvent
@@ -47,8 +78,8 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	
 	Plan handleSensor resumeLastPlan [
 		// O = thermometer	=> P = real number representing the current temperature
-		// O = clock 		=> P = positive integer representing the number of seconds from midnight (00:00:00 = 0, 23:59:59 = 3599, 10:05:06 = 10*3600 + 5*60 + 6)
-		onEvent sensorEvent : sensorEvent(O, P) -> println(sensorEvent(O, P))
+		// O = clock 		=> P = positive integer representing the number of seconds from midnight (00:00:00 = 0, 23:59:59 = 86399, 10:05:06 = 10*3600 + 5*60 + 6)
+		onEvent sensorEvent : sensorEvent(O, P) -> demo changeModelItem(O, P)
 	]
 }
 
@@ -64,7 +95,7 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 	finally repeatPlan
 		
 	Plan execMove resumeLastPlan [
-		printCurrentMessage;    
+		printCurrentMessage;
 		onMsg moveRobot : usercmd( robotgui(h(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotStop();
 		onMsg moveRobot : usercmd( robotgui(w(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotForward();
 		onMsg moveRobot : usercmd( robotgui(s(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward();
