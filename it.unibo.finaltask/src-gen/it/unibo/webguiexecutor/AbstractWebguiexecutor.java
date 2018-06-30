@@ -62,8 +62,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	stateTab.put("checkInitialSonarDistance",checkInitialSonarDistance);
 	    	stateTab.put("clean",clean);
 	    	stateTab.put("cleanMove",cleanMove);
-	    	stateTab.put("cleanStop",cleanStop);
 	    	stateTab.put("cleanRotate",cleanRotate);
+	    	stateTab.put("cleanStop",cleanStop);
 	    	stateTab.put("handleSensor",handleSensor);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
@@ -133,7 +133,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	}
 	    	};//actionseq
 	    	}
-	    	else{ temporaryStr = "\"Sensors conditions invalid, cannot start\"";
+	    	else{ temporaryStr = "\"Sensors conditions invalid, cannot clean\"";
 	    	println( temporaryStr );  
 	    	}
 	    	//switchTo checkInitialPosition
@@ -149,6 +149,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("checkInitialPosition",-1);
 	    	String myselfName = "checkInitialPosition";  
+	    	temporaryStr = "\"Sensors conditions are valid, checking initial position...\"";
+	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,true,
 	          new StateFun[]{stateTab.get("checkInitialSonarDistance") }, 
@@ -164,7 +166,6 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("checkInitialSonarDistance",-1);
 	    	String myselfName = "checkInitialSonarDistance";  
-	    	printCurrentEvent(false);
 	    	temporaryStr = "curSonarDistance(D)";
 	    	removeRule( temporaryStr );  
 	    	//onEvent 
@@ -197,11 +198,9 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	parg = "changeModelItem(hueLamp,on)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(d(X)))", guardVars ).toString();
-	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	//switchTo listen
+	    	//switchTo cleanRotate
 	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "listen",false, false, null); 
+	              "cleanRotate",false, false, null); 
 	    }catch(Exception e_clean){  
 	    	 println( getName() + " plan=clean WARNING:" + e_clean.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -226,6 +225,26 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    }
 	    };//cleanMove
 	    
+	    StateFun cleanRotate = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleanRotate",0);
+	     pr.incNumIter(); 	
+	    	String myselfName = "cleanRotate";  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(h(X)))", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(d(X)))", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
+	    	//bbb
+	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
+	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("cleanStop") }, 
+	          new String[]{"true","E","sensorEvent", "true","E","ctrlAppl" },
+	          1000, "cleanMove" );//msgTransition
+	    }catch(Exception e_cleanRotate){  
+	    	 println( getName() + " plan=cleanRotate WARNING:" + e_cleanRotate.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//cleanRotate
+	    
 	    StateFun cleanStop = () -> {	
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("cleanStop",-1);
@@ -235,7 +254,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(h(X)))", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"Application stopped...\"";
+	    	temporaryStr = "\"Application stopped.\"";
 	    	println( temporaryStr );  
 	    	//switchTo listen
 	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
@@ -245,26 +264,6 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//cleanStop
-	    
-	    StateFun cleanRotate = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleanRotate",1);
-	     pr.incNumIter(); 	
-	    	String myselfName = "cleanRotate";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(h(X)))", guardVars ).toString();
-	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(a(X)))", guardVars ).toString();
-	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	//bbb
-	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,true,
-	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("cleanStop") }, 
-	          new String[]{"true","E","sensorEvent", "true","E","ctrlAppl" },
-	          1000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_cleanRotate){  
-	    	 println( getName() + " plan=cleanRotate WARNING:" + e_cleanRotate.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//cleanRotate
 	    
 	    StateFun handleSensor = () -> {	
 	    try{	

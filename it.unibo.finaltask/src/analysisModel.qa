@@ -60,16 +60,18 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		[!? validConditions] {
 			onEvent ctrlAppl : ctrlAppl(go) -> addRule shouldStart
 		} else
-			println("Sensors conditions invalid, cannot start")
+			println("Sensors conditions invalid, cannot clean")
 	]
 	switchTo [?? shouldStart] checkInitialPosition
 	
-	Plan checkInitialPosition resumeLastPlan [] transition
+	Plan checkInitialPosition resumeLastPlan [
+		println("Sensors conditions are valid, checking initial position...")
+	]
+	transition
 		whenTime 1000 -> listen,
 		whenEvent sonar -> checkInitialSonarDistance
 		
 	Plan checkInitialSonarDistance resumeLastPlan [
-		printCurrentEvent;
 		removeRule curSonarDistance(D);
 		onEvent sonar : sonar(sonar1, player, D) -> addRule curSonarDistance(D)
 	]
@@ -77,10 +79,9 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 			
 	Plan clean [
 		println("Application started...");
-		demo changeModelItem(hueLamp, on);
-		forward robot -m moveRobot : usercmd( robotgui(d(X)) )
+		demo changeModelItem(hueLamp, on)
 	]
-	switchTo listen
+	switchTo cleanRotate
 	
 	Plan cleanMove [
 		forward robot -m moveRobot : usercmd( robotgui(w(X)) )
@@ -89,23 +90,24 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		whenTime 1000 -> cleanRotate,
 		whenEvent sensorEvent -> handleSensor,
 		whenEvent ctrlAppl -> cleanStop
-		finally repeatPlan
-		
+	finally repeatPlan
+	
+	Plan cleanRotate [
+		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
+		forward robot -m moveRobot : usercmd( robotgui(d(X)) )
+	]
+	transition
+		whenTime 1000 -> cleanMove,
+		whenEvent sensorEvent -> handleSensor,
+		whenEvent ctrlAppl -> cleanStop
+	finally repeatPlan
+	
 	Plan cleanStop [
 		demo changeModelItem(hueLamp, off);
 		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
-		println("Application stopped...")
+		println("Application stopped.")
 	]
 	switchTo listen
-	
-	Plan cleanRotate resumeLastPlan [
-		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
-		forward robot -m moveRobot : usercmd( robotgui(a(X)) )
-	]
-	transition stopAfter 1000
-	whenEvent sensorEvent -> handleSensor,
-	whenEvent ctrlAppl -> cleanStop
-	finally repeatPlan 1
 	
 	Plan handleSensor resumeLastPlan [
 		// O = thermometer	=> P = real number representing the current temperature
