@@ -144,14 +144,16 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %------------------------------------------------- 
 tempThreshold( 25).
 timeInterval( 32400,39600).
+sonarThreshold( 5).
 model( thermometer,20).
 model( clock,36300).
 model( hueLamp,off).
 validConditions:-model( thermometer,T),model( clock,H),tempThreshold( Tmax),timeInterval( Hmin,Hmax),eval( le,T,Tmax),eval( ge,H,Hmin),eval( le,H,Hmax).
+inFrontOfSonar:-sonarThreshold( Dmax),curSonarDistance( D),eval( le,D,Dmax).
 changedModelAction( thermometer,_):-validConditions, ! .
-changedModelAction( thermometer,_):-emitEvent( startAppl,startAppl( halt)).
+changedModelAction( thermometer,_):-emitEvent( ctrlAppl,ctrlAppl( halt)).
 changedModelAction( clock,_):-validConditions, ! .
-changedModelAction( clock,_):-emitEvent( startAppl,startAppl( halt)).
+changedModelAction( clock,_):-emitEvent( ctrlAppl,ctrlAppl( halt)).
 changedModelAction( hueLamp,V):-emitEvent( ctrlEvent,ctrlEvent( hueLamp,V)).
 /*
 ------------------------------------------------------------------------

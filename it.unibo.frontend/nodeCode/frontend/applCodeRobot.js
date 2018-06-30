@@ -141,9 +141,14 @@ app.get('/', function(req, res) {
 /*
  * ====================== COMMANDS ================
  */
-app.post("/robot/actions/commands/appl", function(req, res) {
+app.post("/robot/actions/commands/applGo", function(req, res) {
 	console.info("START THE APPLICATION");
-	if( externalActuator ) delegate( "x(low)", "application", req, res);
+	if( externalActuator ) delegate( "x(go)", "application", req, res);
+});
+
+app.post("/robot/actions/commands/applStop", function(req, res) {
+	console.info("STOP THE APPLICATION");
+	if( externalActuator ) delegate( "x(halt)", "application", req, res);
 });	
 
 app.post("/robot/actions/commands/w", function(req, res) {

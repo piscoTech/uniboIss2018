@@ -52,7 +52,7 @@ public class mbotConnTcp {
 						case "sonar-activated":
 							jsonArg = jsonObject.getJSONObject("arg");
 							String sonarName = jsonArg.getString("sonarName");
-							int distance = jsonArg.getInt("distance");
+							int distance = Math.abs(jsonArg.getInt("distance"));
 							qa.emit("sonar", "sonar(NAME, player, DISTANCE)".replace("NAME", sonarName.replace("-", ""))
 									.replace("DISTANCE", ("" + distance)));
 							break;

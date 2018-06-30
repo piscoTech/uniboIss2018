@@ -24,5 +24,5 @@ emitEvent(EVID, EVCONTENT) :-
 	actorobj( Actor ), 
 	Actor <- emit(EVID, EVCONTENT).
 
-initResourceTheory :- output("Loading Prolog Reasource Model...").
+initResourceTheory :- output("Loading Prolog Resource Model...").
 :- initialization(initResourceTheory).

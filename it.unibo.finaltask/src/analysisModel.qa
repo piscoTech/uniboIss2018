@@ -6,7 +6,7 @@ Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
 Dispatch moveRobot	: usercmd(CMD)
-Dispatch startAppl	: startAppl(X)					// X = go | halt
+Event ctrlAppl	: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
@@ -23,6 +23,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	Rules {
 		tempThreshold(25).			// 25°C
 		timeInterval(32400, 39600).	// 9:00:00 - 11:00:00
+		sonarThreshold(5).
 		
 		model(thermometer, 20).	// 20°C
 		model(clock, 36300). 	// 10:05:00
@@ -31,12 +32,15 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		validConditions :-
 			model(thermometer, T), model(clock, H), tempThreshold(Tmax), timeInterval(Hmin, Hmax),
 			eval(le, T, Tmax), eval(ge, H, Hmin), eval(le, H, Hmax).
+			
+		inFrontOfSonar :- sonarThreshold(Dmax),
+			curSonarDistance(D), eval(le, D, Dmax).		
  		
 		changedModelAction(thermometer, _) :- validConditions, !. 
-		changedModelAction(thermometer, _) :- emitEvent(startAppl, startAppl(halt)).
+		changedModelAction(thermometer, _) :- emitEvent(ctrlAppl, ctrlAppl(halt)).
 		
 		changedModelAction(clock, _) :- validConditions, !. 
-		changedModelAction(clock, _) :- emitEvent(startAppl, startAppl(halt)).
+		changedModelAction(clock, _) :- emitEvent(ctrlAppl, ctrlAppl(halt)).
 					     
 		changedModelAction(hueLamp, V) :- emitEvent(ctrlEvent, ctrlEvent(hueLamp, V)).
 	}
@@ -48,39 +52,67 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	switchTo listen
 	
 	Plan listen [] transition stopAfter 3600000
-		whenMsg startAppl -> startLogic,
-		whenEvent sonar -> printEv,
-		whenEvent sonarDetect -> printEv,
+		whenEvent ctrlAppl -> startLogic,
 		whenEvent sensorEvent -> handleSensor
 	finally repeatPlan
 		
 	Plan startLogic resumeLastPlan [
-		onMsg startAppl : startAppl(go) -> addRule shouldStart
-	]
-	switchTo [?? shouldStart] clean
-	
-	Plan clean [
 		[!? validConditions] {
-			println("Application started...");
-			delay 1000;
-			demo changeModelItem(hueLamp, on);
-			delay 2000;
-			demo changeModelItem(hueLamp, off);
-			println("Application done!")
+			onEvent ctrlAppl : ctrlAppl(go) -> addRule shouldStart
 		} else
 			println("Sensors conditions invalid, cannot start")
 	]
+	switchTo [?? shouldStart] checkInitialPosition
+	
+	Plan checkInitialPosition resumeLastPlan [] transition
+		whenTime 1000 -> listen,
+		whenEvent sonar -> checkInitialSonarDistance
+		
+	Plan checkInitialSonarDistance resumeLastPlan [
+		printCurrentEvent;
+		removeRule curSonarDistance(D);
+		onEvent sonar : sonar(sonar1, player, D) -> addRule curSonarDistance(D)
+	]
+	switchTo [!? inFrontOfSonar] clean
+			
+	Plan clean [
+		println("Application started...");
+		demo changeModelItem(hueLamp, on);
+		forward robot -m moveRobot : usercmd( robotgui(d(X)) )
+	]
 	switchTo listen
 	
-	Plan printEv resumeLastPlan [
-		printCurrentEvent
+	Plan cleanMove [
+		forward robot -m moveRobot : usercmd( robotgui(w(X)) )
 	]
+	transition
+		whenTime 1000 -> cleanRotate,
+		whenEvent sensorEvent -> handleSensor,
+		whenEvent ctrlAppl -> cleanStop
+		finally repeatPlan
+		
+	Plan cleanStop [
+		demo changeModelItem(hueLamp, off);
+		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
+		println("Application stopped...")
+	]
+	switchTo listen
+	
+	Plan cleanRotate resumeLastPlan [
+		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
+		forward robot -m moveRobot : usercmd( robotgui(a(X)) )
+	]
+	transition stopAfter 1000
+	whenEvent sensorEvent -> handleSensor,
+	whenEvent ctrlAppl -> cleanStop
+	finally repeatPlan 1
 	
 	Plan handleSensor resumeLastPlan [
 		// O = thermometer	=> P = real number representing the current temperature
 		// O = clock 		=> P = positive integer representing the number of seconds from midnight (00:00:00 = 0, 23:59:59 = 86399, 10:05:06 = 10*3600 + 5*60 + 6)
 		onEvent sensorEvent : sensorEvent(O, P) -> demo changeModelItem(O, P)
 	]
+	switchTo [not !? validConditions] cleanStop
 }
 
 QActor robot context ctxFinalSysAnalysis -pubsub {
@@ -101,7 +133,7 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 		onMsg moveRobot : usercmd( robotgui(s(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward();
 		onMsg moveRobot : usercmd( robotgui(a(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
 		onMsg moveRobot : usercmd( robotgui(d(X)) ) -> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
-		onMsg moveRobot : usercmd( robotgui(x(X)) ) -> forward webguiexecutor -m startAppl : startAppl(go)
+		onMsg moveRobot : usercmd( robotgui(x(X)) ) -> emit ctrlAppl : ctrlAppl(X)
 	]
 }
 

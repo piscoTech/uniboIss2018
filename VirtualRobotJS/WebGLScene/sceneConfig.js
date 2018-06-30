@@ -4,7 +4,7 @@ const config = {
     },
     player: {
         //position: { x: 0.5, y: 0.5 },		//CENTER
-        position: { x: 0.2, y: 0.2 },		//INIT
+        position: { x: 0.15, y: 0.2 },		//INIT
         //position: { x: 0.8, y: 0.85 },		//END
         speed: 0.2
     },

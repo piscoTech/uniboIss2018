@@ -165,11 +165,11 @@ public abstract class AbstractRobot extends QActor {
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="startAppl(go)";
-	    		/* SendDispatch */
+	    		String parg="ctrlAppl(X)";
+	    		/* RaiseEvent */
 	    		parg = updateVars(Term.createTerm("usercmd(CMD)"),  Term.createTerm("usercmd(robotgui(x(X)))"), 
 	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) sendMsg("startAppl","webguiexecutor", QActorContext.dispatch, parg ); 
+	    		if( parg != null ) emit( "ctrlAppl", parg );
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robot_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  

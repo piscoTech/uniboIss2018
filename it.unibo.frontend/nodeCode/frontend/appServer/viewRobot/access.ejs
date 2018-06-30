@@ -18,7 +18,7 @@
 			<table style="background-color: #d9f7f3; margin: 0 auto;">
 				<tr>
 					<td align="center">   
-						<form action="/robot/actions/commands/appl" method="post">
+						<form action="/robot/actions/commands/applGo" method="post">
 							<input type="submit" value="Appl" class="btn btn-primary btn-block">
 						</form>						
 					</td>
@@ -27,7 +27,11 @@
 							<input type="submit" value="Forward" class="btn btn-primary btn-block">
 						</form>
 					</td>
-					<td align="center"> </td>
+					<td align="center">
+						<form action="/robot/actions/commands/applStop" method="post">
+							<input type="submit" value="StopAppl" class="btn btn-primary btn-block">
+						</form>						
+					</td>
 				</tr>
 				<tr>
 					<td align="center">

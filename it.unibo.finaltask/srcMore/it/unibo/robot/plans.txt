@@ -6,5 +6,5 @@ plan(3,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( w( X))) ,
 plan(4,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( s( X))) , not here StateMoveNormal),'','' ))
 plan(5,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( a( X))) , not here StateMoveNormal),'','' ))
 plan(6,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( d( X))) , not here StateMoveNormal),'','' ))
-plan(7,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( x( X))) , forward(webguiexecutor, startAppl,startAppl( go))),'','' ))
+plan(7,execMove, sentence(true,msgswitch(moveRobot, usercmd( robotgui( x( X))) , raise( ctrlAppl , ctrlAppl( X) )')),'','' ))
 plan(8,execMove, sentence(true,move(resumeplan),'','' ))
