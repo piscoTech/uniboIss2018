@@ -6,7 +6,7 @@ Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
 Dispatch moveRobot	: usercmd(CMD)
-Event ctrlAppl	: ctrlAppl(X)					// X = go | halt
+Event ctrlAppl		: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
@@ -27,7 +27,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		
 		model(thermometer, 20).	// 20°C
 		model(clock, 36300). 	// 10:05:00
-		model(hueLamp, off).
+		model(blinker, off).
 		
 		validConditions :-
 			model(thermometer, T), model(clock, H), tempThreshold(Tmax), timeInterval(Hmin, Hmax),
@@ -42,7 +42,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		changedModelAction(clock, _) :- validConditions, !. 
 		changedModelAction(clock, _) :- emitEvent(ctrlAppl, ctrlAppl(halt)).
 					     
-		changedModelAction(hueLamp, V) :- emitEvent(ctrlEvent, ctrlEvent(hueLamp, V)).
+		changedModelAction(blinker, V) :- emitEvent(ctrlEvent, ctrlEvent(blinker, V)).
 	}
 	
 	Plan init normal [
@@ -79,7 +79,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 			
 	Plan clean [
 		println("Application started...");
-		demo changeModelItem(hueLamp, on)
+		demo changeModelItem(blinker, on)
 	]
 	switchTo cleanRotate
 	
@@ -103,7 +103,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	finally repeatPlan
 	
 	Plan cleanStop [
-		demo changeModelItem(hueLamp, off);
+		demo changeModelItem(blinker, off);
 		forward robot -m moveRobot : usercmd( robotgui(h(X)) );
 		println("Application stopped.")
 	]
@@ -115,6 +115,46 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		onEvent sensorEvent : sensorEvent(O, P) -> demo changeModelItem(O, P)
 	]
 	switchTo [not !? validConditions] cleanStop
+}
+
+QActor blinker context ctxFinalSysAnalysis -pubsub {
+	Plan init normal [
+		println("Blinker ready...")
+	]
+	switchTo listen
+	
+	Plan listen [] transition stopAfter 3600000
+		whenEvent ctrlEvent -> checkStart
+	finally repeatPlan	
+	
+	Plan checkStart resumeLastPlan [
+		onEvent ctrlEvent : ctrlEvent(blinker, on) -> addRule shouldBlink
+	]
+	switchTo [?? shouldBlink] blinkOn
+	
+	Plan blinkOn [
+		emit ctrlEvent : ctrlEvent(hueLamp, on)
+	] transition
+		whenTime 500 -> blinkOff,
+		whenEvent ctrlEvent -> checkEnd
+	finally repeatPlan
+		
+	Plan blinkOff [
+		emit ctrlEvent : ctrlEvent(hueLamp, off)
+	] transition
+		whenTime 500 -> blinkOn,
+		whenEvent ctrlEvent -> checkEnd
+	finally repeatPlan
+		
+	Plan checkEnd resumeLastPlan [
+		onEvent ctrlEvent : ctrlEvent(blinker, off) -> addRule shouldStop
+	]
+	switchTo [?? shouldStop] blinkStop
+	
+	Plan blinkStop [
+		emit ctrlEvent : ctrlEvent(hueLamp, off)
+	]
+	switchTo listen
 }
 
 QActor robot context ctxFinalSysAnalysis -pubsub {
