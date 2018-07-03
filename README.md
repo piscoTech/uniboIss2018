@@ -39,14 +39,15 @@ _Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – 
 
 ## Avvio del sistema
 
-1. Avvia Mosquitto usando l'alias `mosquitto`
-2. Avvia il robot virtuale usando `startRobot.sh`
-3. Avvia MongoDB usando l'alias `mongodb`
-4. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
-5. Avvia i mock per l'hardware avviando `ISS 2018 – Mock.app`
-6. Avvia il frontend server usando `startFrontEnd.sh`
+1. Avvia (in qualsiasi ordine)
+	- Mosquitto usando l'alias `mosquitto`
+	- Il robot virtuale usando `startRobot.sh`
+	- MongoDB usando l'alias `mongodb`
+	- I mock per l'hardware avviando `ISS 2018 – Mock.app`
+	- Il frontend server usando `startFrontEnd.sh`
+2. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
 
-È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000.
+È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`) e viene interrotta la connessione TCP che controlla il robot, richiedendo quindi di riavviare l'applicazione QActor per poter funzionare correttamente.
 
 ## Commit
 
