@@ -96,7 +96,7 @@ public abstract class AbstractRobot extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"robot_"+myselfName,false,
 	          new StateFun[]{stateTab.get("execMove") }, 
-	          new String[]{"true","M","moveRobot" },
+	          new String[]{"true","E","moveRobot" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
@@ -109,67 +109,75 @@ public abstract class AbstractRobot extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
 	    	printCurrentMessage(false);
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(h(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotStop(this );
-	    		}
+	    	curT = Term.createTerm("moveRobot(h)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			it.unibo.robot.pfrs.mbotConnTcp.mbotStop(this );
+	    			}
 	    	}
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(w(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this );
-	    		}
+	    	curT = Term.createTerm("moveRobot(w(X))");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			String arg1 = "X" ;
+	    			arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(w(X))"), 
+	    				                Term.createTerm(currentEvent.getMsg()),  arg1 );	                
+	    			//end arg1
+	    			it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this,arg1 );
+	    			}
 	    	}
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(s(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this );
-	    		}
+	    	curT = Term.createTerm("moveRobot(s(X))");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			String arg1 = "X" ;
+	    			arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(s(X))"), 
+	    				                Term.createTerm(currentEvent.getMsg()),  arg1 );	                
+	    			//end arg1
+	    			it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this,arg1 );
+	    			}
 	    	}
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(a(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotLeft(this );
-	    		}
+	    	curT = Term.createTerm("moveRobot(a)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			it.unibo.robot.pfrs.mbotConnTcp.mbotLeft(this );
+	    			}
 	    	}
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(d(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotRight(this );
-	    		}
+	    	curT = Term.createTerm("moveRobot(d)");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			{/* JavaLikeMove */ 
+	    			it.unibo.robot.pfrs.mbotConnTcp.mbotRight(this );
+	    			}
 	    	}
-	    	//onMsg 
+	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(x(X)))");
-	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="ctrlAppl(X)";
-	    		/* RaiseEvent */
-	    		parg = updateVars(Term.createTerm("usercmd(CMD)"),  Term.createTerm("usercmd(robotgui(x(X)))"), 
-	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) emit( "ctrlAppl", parg );
+	    	curT = Term.createTerm("moveRobot(x(X))");
+	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
+	    			String parg="ctrlAppl(X)";
+	    			/* RaiseEvent */
+	    			parg = updateVars(Term.createTerm("moveRobot(X)"),  Term.createTerm("moveRobot(x(X))"), 
+	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
+	    			if( parg != null ) emit( "ctrlAppl", parg );
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robot_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  

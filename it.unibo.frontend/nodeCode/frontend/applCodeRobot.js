@@ -152,23 +152,23 @@ app.post("/robot/actions/commands/applStop", function(req, res) {
 });	
 
 app.post("/robot/actions/commands/w", function(req, res) {
-	if( externalActuator ) delegate( "w(low)", "moving forward", req, res);
+	if( externalActuator ) delegate( "w(0)", "moving forward", req, res);
 	else actuate( `{ "type": "moveForward",  "arg": -1 }`, "server moving forward", req, res);
 });	
 app.post("/robot/actions/commands/s", function(req, res) {
-	if( externalActuator ) delegate( "s(low)", "moving backward", req, res );
+	if( externalActuator ) delegate( "s(0)", "moving backward", req, res );
 	else actuate( `{ "type": "moveBackward",  "arg": -1 }`, "server moving backward", req, res);
 });	
 app.post("/robot/actions/commands/a", function(req, res) {
-	if( externalActuator ) delegate( "a(low)", "moving left", req, res );
+	if( externalActuator ) delegate( "a", "moving left", req, res );
 	else actuate( `{ "type": "turnLeft",  "arg": 1000 }`, "server moving left", req, res);
 });	
 app.post("/robot/actions/commands/d", function(req, res) {
-	if( externalActuator ) delegate( "d(low)", "moving right", req, res );
+	if( externalActuator ) delegate( "d", "moving right", req, res );
 	else actuate( `{ "type": "turnRight",  "arg": 1000 }`, "server moving right", req, res);
 });	
 app.post("/robot/actions/commands/h", function(req, res) {
-	if( externalActuator ) delegate( "h(low)", "stopped", req, res );
+	if( externalActuator ) delegate( "h", "stopped", req, res );
 	else actuate( `{  "type": "alarm",  "arg": 1000 }`, "server stopped", req, res);
 });		
 

@@ -86,17 +86,26 @@ public class mbotConnTcp {
 		System.out.println(msg);
 	}
 
-	public static void mbotForward(QActor qa) {
+	private static int parseTimeString(String time) {
 		try {
-			sendCmd("moveForward", FOREVER);
+			int t = Integer.parseInt(time);
+			return t > 0 ? t : FOREVER;
+		} catch (Exception e) {
+			return FOREVER;
+		}
+	}
+
+	public static void mbotForward(QActor qa, String time) {
+		try {
+			sendCmd("moveForward", parseTimeString(time));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void mbotBackward(QActor qa) {
+	public static void mbotBackward(QActor qa, String time) {
 		try {
-			sendCmd("moveBackward", FOREVER);
+			sendCmd("moveBackward", parseTimeString(time));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
