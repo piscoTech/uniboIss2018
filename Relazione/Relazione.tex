@@ -15,7 +15,7 @@ Il robot dovrà muoversi da una posizione iniziale intercettata da \texttt{sonar
 
 Per \textit{sonar} si intende un dispositivo, reale o virtuale, che sfrutta una qualche tecnologia per individuare quando il robot passa davanti a questo.
 
-Il robot è controllato attraverso un'interfaccia grafica, detta \texttt{console}, accessibile ad un utente umano autorizzato dall'inserimento di credenziali riconosciute dal sistema. L'attività di pulizia è innescata dall'invio del comando \texttt{START} da parte dell'utente autorizzato che controlla il robot. Ciò avviene mediante un qualunque dispositivo in grado di connettersi al robot. Se il robot non è rilevato (entro una certa distanza) dal sonar 1 dopo l'invio del comando \texttt{START}, il robot non parte con l'attività di pulizia automatica. 
+Il robot è controllato attraverso un'interfaccia grafica, detta \texttt{console}, accessibile ad un utente umano autorizzato dall'inserimento di credenziali riconosciute dal sistema. L'attività di pulizia è innescata dall'invio del comando \texttt{START} da parte dell'utente autorizzato che controlla il robot. Ciò avviene mediante un qualunque dispositivo in grado di connettersi alla console, sarà quest'ultima a connettersi al robot. Se il robot non è rilevato (entro una certa distanza) dal \texttt{sonar1} all'invio del comando \texttt{START}, il robot non parte con l'attività di pulizia automatica. 
 
 L'utente può comandare solo \texttt{START} o \texttt{STOP}, e non deve disporre di comandi manuali per pilotare il robot.
 
@@ -36,6 +36,8 @@ L'attività di pulizia deve terminare se:
 \item il robot ha terminato l'attività di pulizia, ovvero raggiunge la posizione finale.
 \end{itemize}
 
+Risultano essere presenti tre nodi di elaborazione: il robot, la console e dispositivi hardware come sensori e la lampada Hue.
+
 \section{Analisi del problema}
 Analizzando i progetti realizzati e presentati a lezione, si ha già a disposizione la console, realizzata come un frontend server in tecnologia Node.js. Essa presenta l'autenticazione degli utenti attraverso una coppia username-password come credenziali di accesso ed i comandi per pilotare il robot nelle sue azioni di base. Possono essere aggiunti facilmente i pulsanti per inviare i comandi di \texttt{START} e \texttt{STOP}.
 
@@ -43,15 +45,18 @@ Il sistema che si deve realizzare è distribuito, pertanto è necessario individ
 
 Nella scelta di lavorare all'interno di un ambiente virtuale, si ha a disposizione il progetto ConfigurableThreejsApp, che offre l'ambiente virtuale, dotato dei sonar, ed il robot virtuale. Esso è accessibile attraverso un'interfaccia web e controllabile attraverso una socket TCP.
 
+Per realizzare un primo prototipo del robot con la logica applicativa che controlla l'attività di pulizia ci si appoggia a un linguaggio che permette di scrivere modelli eseguibili per garantire una rapida prototipazione. Questo linguaggio viene individuato in QActor, che permette anche di integrarsi nativamente con un'infrastruttura a scambio di messaggi via MQTT e lavorando su una base Java permette facilmente di avere accesso a delle API per gestire le socket.
+
 Dato che il robot non comunica nativamente via messaggi occorre realizzare un adapter che intercetti i comandi di base inviati dalla console, o dalla logica applicativa durante la pulizia, per pilotare il robot e li traduca in un flusso di dati TCP che il robot possa comprendere. Questo adapter si occuperà anche di ricevere le segnalazioni dei sonar e tradurle in messaggi affinché gli altri componenti del sistema possano esserne a conoscenza.
 
 Per gestire la logica applicativa si rende necessario un componente dedicato che riceva i comandi di \texttt{START} e \texttt{STOP} per controllare l'avvio e la terminazione dell'attività di pulizia, la gestisca e controlli che le condizioni specificate per operare siano soddisfatte.
 
 Per ricevere informazioni su temperatura ambientale e ora corrente occorre realizzare due sensori, un termometro e un orologio, che possano inviare le rispettive informazioni. Poiché queste interessano solamente l'attività di pulizia automatica, possono essere intercettate solamente dal componente che si occupa della logica applicativa e usarle per aggiornare lo stato interno e terminare, se è il caso, l'attività di pulizia.
 
-\section{Progetto}
-Per realizzare un primo prototipo del robot con la logica applicativa che controlla l'attività di pulizia ci si appoggia a un linguaggio che permette di scrivere modelli eseguibili per garantire una rapida prototipazione. Questo linguaggio viene individuato in QActor, che permette anche di integrarsi nativamente con un'infrastruttura a scambio di messaggi via MQTT e lavorando su una base Java permette facilmente di avere accesso a delle API per gestire le socket.
+\subsection{Lampada Hue}
+Per gestire la lampada che lampeggia occorre identificare un'entità che alterni ciclicamente tra due stati accendendo e spegnendo la lampada, cosa perfettamente adatta a un attore QActor, per non interferire con le normali operazioni della logica applicativa risulta conveniente modellare questo \textit{blinker} come un attore separato controllato dalla logica applicativa e a sua volta controlla la lampada direttamente.
 
+\section{Progetto}
 Per mantenere lo stato del sistema ci si può appoggiare al supporto nativo del Prolog da parte di QActor per modellare una base di conoscenza che tenga traccia di temperatura e ora corrente, se si sta facendo la pulizia e qualunque altra informazione utile come la soglia di temperatura e l'intervallo di tempo in cui si può lavorare.
 
 Non avendo a disposizione una realizzazione, fisica o virtuale, in grado di interagire in qualche modo con il sistema per come lo si è individuato finora, si è scelto di realizzarli da zero come sensori virtuali direttamente integrati con l'infrastruttura MQTT. È stato realizzato anche un mock per la lampada Hue per poter testare il funzionamento del robot quando quella fisica non è accessibile. Questo mock interagisce direttamente con i messaggi di controllo scambiati via MQTT, ma per controllare quella fisica occorre realizzare un adapter che intercetti i comandi e li traduca in opportune chiamate RESTful.
@@ -60,9 +65,15 @@ L'interazione tra le parti del sistema è gestita attraverso messaggi scambiati 
 
 In quest'ottica, l'invio di nuovi dati da parte dei sensori avviene attraverso l'emissione di un evento \texttt{sensorEvent(ORIGIN, PAYLOAD)} che specifica il sensore coinvolto e le informazioni relative. In maniera analoga si ha l'evento \texttt{ctrlEvent(TARGET, PAYLOAD)} che specifica un attuatore e le informazioni per l'azione da compiere, questo sarà emesso solamente dalla logica applicativa e indirizzato alla lampada Hue per i comandi di spegnimento e accensione. L'evento di controllo sarà quindi essere intercettato direttamente dal mock per controllare la lampada virtuale e dal già citato adapter che si occuperà di tradurre l'evento in chiamate RESTful.
 
+\subsection{Lampada Hue}
+Per quanto riguarda lo stato della lampada, la logica applicativa non è interessata a sapere se questa è accesa o spenta, ma se questa sta lampeggiando o no. Lo stato mantenuto sarà quindi quello del blinker. Sarà l'attore blinker a inviare \texttt{ctrlEvent} per la lampada, mentre la logica applicativa ne invierà uno per il blincker.
+
 \section{Log}
 
-\subsection{1° sprint –– 23-27/06/2018}
+\subsection{1° sprint -- 23-27/06/2018}
 Ci siamo concentrati sull'analisi dei requisiti e del problema a livello generale per individuare le parti che abbiamo già a disposizione da progetti svolti a lezione. Queste parti sono state assemblate assieme a un mock per i dispositivi hardware (sensori e attuatori) richiesti per avere un primo prototipo funzionante, ma senza logica applicativa, del sistema.
+
+\subsection{2° sprint -- 27/06-04/07/2018}
+Supporto delle stato del robot come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
 
 \end{document}
