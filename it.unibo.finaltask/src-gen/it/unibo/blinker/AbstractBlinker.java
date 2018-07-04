@@ -99,7 +99,7 @@ public abstract class AbstractBlinker extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"blinker_"+myselfName,false,
 	          new StateFun[]{stateTab.get("checkStart") }, 
-	          new String[]{"true","E","ctrlEvent" },
+	          new String[]{"true","M","blinkerCtrl" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
@@ -111,17 +111,17 @@ public abstract class AbstractBlinker extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("checkStart",-1);
 	    	String myselfName = "checkStart";  
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlEvent(blinker,on)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
-	    		pengine.unify(curT, Term.createTerm("ctrlEvent(TARGET,PAYLOAD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="shouldBlink";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("ctrlEvent(TARGET,PAYLOAD)"),  Term.createTerm("ctrlEvent(blinker,on)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
+	    	curT = Term.createTerm("blinkerCtrl(on)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("blinkerCtrl") && 
+	    		pengine.unify(curT, Term.createTerm("blinkerCtrl(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="shouldBlink";
+	    		/* AddRule */
+	    		parg = updateVars(Term.createTerm("blinkerCtrl(CMD)"),  Term.createTerm("blinkerCtrl(on)"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) addRule(parg);	    		  					
 	    	}
 	    	//switchTo blinkOn
 	        switchToPlanAsNextState(pr, myselfName, "blinker_"+myselfName, 
@@ -142,7 +142,7 @@ public abstract class AbstractBlinker extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"blinker_"+myselfName,false,
 	          new StateFun[]{stateTab.get("checkEnd") }, 
-	          new String[]{"true","E","ctrlEvent" },
+	          new String[]{"true","M","blinkerCtrl" },
 	          500, "blinkOff" );//msgTransition
 	    }catch(Exception e_blinkOn){  
 	    	 println( getName() + " plan=blinkOn WARNING:" + e_blinkOn.getMessage() );
@@ -160,7 +160,7 @@ public abstract class AbstractBlinker extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"blinker_"+myselfName,false,
 	          new StateFun[]{stateTab.get("checkEnd") }, 
-	          new String[]{"true","E","ctrlEvent" },
+	          new String[]{"true","M","blinkerCtrl" },
 	          500, "blinkOn" );//msgTransition
 	    }catch(Exception e_blinkOff){  
 	    	 println( getName() + " plan=blinkOff WARNING:" + e_blinkOff.getMessage() );
@@ -172,17 +172,17 @@ public abstract class AbstractBlinker extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("checkEnd",-1);
 	    	String myselfName = "checkEnd";  
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlEvent(blinker,off)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("ctrlEvent") && 
-	    		pengine.unify(curT, Term.createTerm("ctrlEvent(TARGET,PAYLOAD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="shouldStop";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("ctrlEvent(TARGET,PAYLOAD)"),  Term.createTerm("ctrlEvent(blinker,off)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
+	    	curT = Term.createTerm("blinkerCtrl(off)");
+	    	if( currentMessage != null && currentMessage.msgId().equals("blinkerCtrl") && 
+	    		pengine.unify(curT, Term.createTerm("blinkerCtrl(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="shouldStop";
+	    		/* AddRule */
+	    		parg = updateVars(Term.createTerm("blinkerCtrl(CMD)"),  Term.createTerm("blinkerCtrl(off)"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) addRule(parg);	    		  					
 	    	}
 	    	//switchTo blinkStop
 	        switchToPlanAsNextState(pr, myselfName, "blinker_"+myselfName, 

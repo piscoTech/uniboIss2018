@@ -6,6 +6,7 @@ Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
 Dispatch moveRobot	: moveRobot(X)
+Dispatch blinkerCtrl	: blinkerCtrl(CMD)				// CMD = on|off
 Event ctrlAppl		: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
@@ -52,7 +53,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		changedModelAction(clock, _) :- validConditions, !. 
 		changedModelAction(clock, _) :- emitEvent(ctrlAppl, ctrlAppl(halt)).
 					     
-		changedModelAction(blinker, V) :- emitEvent(ctrlEvent, ctrlEvent(blinker, V)).
+		changedModelAction(blinker, V) :- sendMsg(blinker, blinkerCtrl, blinkerCtrl(V)).
 	}
 	
 	Plan init normal [
@@ -133,11 +134,11 @@ QActor blinker context ctxFinalSysAnalysis -pubsub {
 	switchTo listen
 	
 	Plan listen [] transition stopAfter 3600000
-		whenEvent ctrlEvent -> checkStart
+		whenMsg blinkerCtrl -> checkStart
 	finally repeatPlan	
 	
 	Plan checkStart resumeLastPlan [
-		onEvent ctrlEvent : ctrlEvent(blinker, on) -> addRule shouldBlink
+		onMsg blinkerCtrl : blinkerCtrl(on) -> addRule shouldBlink
 	]
 	switchTo [?? shouldBlink] blinkOn
 	
@@ -145,18 +146,18 @@ QActor blinker context ctxFinalSysAnalysis -pubsub {
 		emit ctrlEvent : ctrlEvent(hueLamp, on)
 	] transition
 		whenTime 500 -> blinkOff,
-		whenEvent ctrlEvent -> checkEnd
+		whenMsg blinkerCtrl -> checkEnd
 	finally repeatPlan
 		
 	Plan blinkOff [
 		emit ctrlEvent : ctrlEvent(hueLamp, off)
 	] transition
 		whenTime 500 -> blinkOn,
-		whenEvent ctrlEvent -> checkEnd
+		whenMsg blinkerCtrl -> checkEnd
 	finally repeatPlan
 		
 	Plan checkEnd resumeLastPlan [
-		onEvent ctrlEvent : ctrlEvent(blinker, off) -> addRule shouldStop
+		onMsg blinkerCtrl : blinkerCtrl(off) -> addRule shouldStop
 	]
 	switchTo [?? shouldStop] blinkStop
 	

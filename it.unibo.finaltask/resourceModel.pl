@@ -23,6 +23,10 @@ eval(le, X, V) :- eval(lt, X , V).
 emitEvent(EVID, EVCONTENT) :- 
 	actorobj( Actor ), 
 	Actor <- emit(EVID, EVCONTENT).
+	
+sendMsg(TARGET, MSGID, MSGCONTENT) :-
+	actorobj( Actor ), 
+	Actor <- sendMsg(MSGID, TARGET, "dispatch", MSGCONTENT).
 
 initResourceTheory :- output("Loading Prolog Resource Model...").
 :- initialization(initResourceTheory).

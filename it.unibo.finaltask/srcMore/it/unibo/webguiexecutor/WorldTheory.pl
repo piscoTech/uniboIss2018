@@ -154,7 +154,7 @@ changedModelAction( thermometer,_):-validConditions, ! .
 changedModelAction( thermometer,_):-emitEvent( ctrlAppl,ctrlAppl( halt)).
 changedModelAction( clock,_):-validConditions, ! .
 changedModelAction( clock,_):-emitEvent( ctrlAppl,ctrlAppl( halt)).
-changedModelAction( blinker,V):-emitEvent( ctrlEvent,ctrlEvent( blinker,V)).
+changedModelAction( blinker,V):-sendMsg( blinker,blinkerCtrl,blinkerCtrl( V)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),
