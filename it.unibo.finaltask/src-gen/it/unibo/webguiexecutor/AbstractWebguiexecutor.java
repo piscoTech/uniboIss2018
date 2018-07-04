@@ -212,8 +212,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleanMove",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "cleanMove";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "moveRobot(X)","moveRobot(w(0))", guardVars ).toString();
-	    	emit( "moveRobot", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(w(1000))", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("cleanStop") }, 
@@ -230,10 +230,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleanRotate",0);
 	     pr.incNumIter(); 	
 	    	String myselfName = "cleanRotate";  
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "moveRobot(X)","moveRobot(h)", guardVars ).toString();
-	    	emit( "moveRobot", temporaryStr );
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "moveRobot(X)","moveRobot(d)", guardVars ).toString();
-	    	emit( "moveRobot", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(d)", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("cleanStop") }, 
@@ -252,8 +250,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	parg = "changeModelItem(blinker,off)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine, "moveRobot(X)","moveRobot(h)", guardVars ).toString();
-	    	emit( "moveRobot", temporaryStr );
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(h)", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
 	    	temporaryStr = "\"Application stopped.\"";
 	    	println( temporaryStr );  
 	    	//switchTo listen

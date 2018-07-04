@@ -5,7 +5,7 @@ Event usercmd		: usercmd(CMD)					// From web gui
 Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
 Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
-Event moveRobot		: moveRobot(X)
+Dispatch moveRobot	: moveRobot(X)
 Event ctrlAppl		: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
@@ -15,9 +15,19 @@ Event lampEvent		: lampEvent(VERB, INFO)			// Feedback for controlling the real 
 pubSubServer "tcp://localhost:1883"
 
 Context ctxFinalSysAnalysis ip [host="localhost" port=8010]
-EventHandler evh for usercmd -pubsub {
-	emit moveRobot fromContent usercmd( robotgui(X) ) to moveRobot(X)
-};
+
+QActor guitranslator context ctxFinalSysAnalysis -pubsub {
+	Plan init normal [
+		// This actor replaces the event handler to avoid a bug in the QActor system that could lead to event loss
+	]
+	transition stopAfter 36000000
+		whenEvent usercmd -> translate
+	finally repeatPlan
+	
+	Plan translate resumeLastPlan [
+		onEvent usercmd : usercmd( robotgui(X) ) -> forward robot -m moveRobot : moveRobot(X)
+	]
+}
 
 QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	Rules {
@@ -84,7 +94,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	switchTo cleanRotate
 	
 	Plan cleanMove [
-		emit moveRobot : moveRobot(w(0))
+		forward robot -m moveRobot : moveRobot(w(1000))
 	]
 	transition
 		whenTime 1000 -> cleanRotate,
@@ -93,8 +103,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	finally repeatPlan
 	
 	Plan cleanRotate [
-		emit moveRobot : moveRobot(h);
-		emit moveRobot : moveRobot(d)
+		forward robot -m moveRobot : moveRobot(d)
 	]
 	transition
 		whenTime 1000 -> cleanMove,
@@ -104,7 +113,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	
 	Plan cleanStop [
 		demo changeModelItem(blinker, off);
-		emit moveRobot : moveRobot(h);
+		forward robot -m moveRobot : moveRobot(h);
 		println("Application stopped.")
 	]
 	switchTo listen
@@ -170,12 +179,12 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 		
 	Plan execMove resumeLastPlan [
 		printCurrentMessage;
-		onEvent moveRobot : moveRobot(h)	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotStop();
-		onEvent moveRobot : moveRobot(w(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotForward(X);
-		onEvent moveRobot : moveRobot(s(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(X);
-		onEvent moveRobot : moveRobot(a)	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
-		onEvent moveRobot : moveRobot(d)	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
-		onEvent moveRobot : moveRobot(x(X))	-> emit ctrlAppl : ctrlAppl(X)
+		onMsg moveRobot : moveRobot(h)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotStop();
+		onMsg moveRobot : moveRobot(w(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotForward(X);
+		onMsg moveRobot : moveRobot(s(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(X);
+		onMsg moveRobot : moveRobot(a)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
+		onMsg moveRobot : moveRobot(d)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
+		onMsg moveRobot : moveRobot(x(X))	-> emit ctrlAppl : ctrlAppl(X)
 	]
 }
 

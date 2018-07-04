@@ -109,75 +109,75 @@ public abstract class AbstractRobot extends QActor {
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
 	    	printCurrentMessage(false);
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(h)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.robot.pfrs.mbotConnTcp.mbotStop(this );
-	    			}
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		{/* JavaLikeMove */ 
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotStop(this );
+	    		}
 	    	}
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(w(X))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			String arg1 = "X" ;
-	    			arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(w(X))"), 
-	    				                Term.createTerm(currentEvent.getMsg()),  arg1 );	                
-	    			//end arg1
-	    			it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this,arg1 );
-	    			}
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		{/* JavaLikeMove */ 
+	    		String arg1 = "X" ;
+	    		arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(w(X))"), 
+	    			                Term.createTerm(currentMessage.msgContent()),  arg1 );	                
+	    		//end arg1
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this,arg1 );
+	    		}
 	    	}
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(s(X))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			String arg1 = "X" ;
-	    			arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(s(X))"), 
-	    				                Term.createTerm(currentEvent.getMsg()),  arg1 );	                
-	    			//end arg1
-	    			it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this,arg1 );
-	    			}
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		{/* JavaLikeMove */ 
+	    		String arg1 = "X" ;
+	    		arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(s(X))"), 
+	    			                Term.createTerm(currentMessage.msgContent()),  arg1 );	                
+	    		//end arg1
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this,arg1 );
+	    		}
 	    	}
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(a)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.robot.pfrs.mbotConnTcp.mbotLeft(this );
-	    			}
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		{/* JavaLikeMove */ 
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotLeft(this );
+	    		}
 	    	}
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(d)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.robot.pfrs.mbotConnTcp.mbotRight(this );
-	    			}
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		{/* JavaLikeMove */ 
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotRight(this );
+	    		}
 	    	}
-	    	//onEvent 
+	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(x(X))");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("moveRobot") && 
+	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="ctrlAppl(X)";
-	    			/* RaiseEvent */
-	    			parg = updateVars(Term.createTerm("moveRobot(X)"),  Term.createTerm("moveRobot(x(X))"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) emit( "ctrlAppl", parg );
+	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
+	    		String parg="ctrlAppl(X)";
+	    		/* RaiseEvent */
+	    		parg = updateVars(Term.createTerm("moveRobot(X)"),  Term.createTerm("moveRobot(x(X))"), 
+	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
+	    		if( parg != null ) emit( "ctrlAppl", parg );
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robot_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  
