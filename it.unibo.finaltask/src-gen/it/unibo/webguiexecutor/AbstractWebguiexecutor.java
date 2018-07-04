@@ -195,7 +195,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	String myselfName = "clean";  
 	    	temporaryStr = "\"Application started...\"";
 	    	println( temporaryStr );  
-	    	parg = "changeModelItem(hueLamp,on)";
+	    	parg = "changeModelItem(blinker,on)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	//switchTo cleanRotate
@@ -249,7 +249,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("cleanStop",-1);
 	    	String myselfName = "cleanStop";  
-	    	parg = "changeModelItem(hueLamp,off)";
+	    	parg = "changeModelItem(blinker,off)";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"usercmd(CMD)","usercmd(robotgui(h(X)))", guardVars ).toString();
