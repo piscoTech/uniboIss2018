@@ -38,7 +38,7 @@ actualizeNext :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D)))
 fullyExplored :- status(cell(_,_), 0), !, fail.
 fullyExplored.
 
-% Decide towards what cell the robot should move to: a non-cleaned one if 'fullyExplored' is false, the bottom-right corner otherwise
+% Decide towards which cell the robot should move to: a non-cleaned one if 'fullyExplored' is false, the bottom-right corner otherwise
 establishGoal :- destroyGoal, fullyExplored, !, size(Xm, Ym), Xt is Xm-1, Yt is Ym-1, asserta(goal(Xt,Yt)), output(goal(Xt,Yt)).
 establishGoal :- status(cell(X,Y), 0), asserta(goal(X,Y)), output(goal(X,Y)).
 % Destroy any saved target cell
@@ -76,10 +76,10 @@ next(pos(cell(X,Y),w), [act(pos(cell(X1,Y),w), w(STEP))|R]) :- X > 0, !, X1 is X
 next(pos(cell(X,Y),w), R) :- rotate(pos(cell(X,Y),w), R).
 
 % Heuristic for the specified cell as Manhattan distance, rotation is ignored
-% The 3rd argument report the goal relative to which the calculation is done
+% The 3rd argument report the goal relative to which the calculation is done (debugging purposes)
 h(cell(X,Y), H, cell(Xt,Yt)) :- goal(Xt,Yt), !, H is abs(X-Xt)+abs(Y-Yt).
 
-% Given a list of possible moves (1st argument) and past path that leads to the state from which the possible moves are calculated (2nd argument), returns (3rd argument) a list of possible path (a list o list of moves) by appending the given path to each moves of the given list (order is preserved)
+% Given a list of possible moves (1st argument) and past path that leads to the state from which the possible moves are calculated (2nd argument), returns (3rd argument) a list of possible paths (a list of list of moves) by appending the given path to each moves of the given list (order is preserved)
 multiAppend([], _, []).
 multiAppend([H|T], Oth, [[H|Oth]|R]) :- multiAppend(T, Oth, R).
 
@@ -109,7 +109,7 @@ isMovement(w(_)). % Replace with 'isMovement(A) :- not(isRotation(A)).' if it do
 filterVisited([], V, [], V).
 % -If the move is a rotation consider the extact state (rotation and position) to consider it visited
 filterVisited([act(pos(cell(X,Y),D), A)|O], V, OF, NV) :- isRotation(A), member(pos(cell(X,Y),D), V), !, filterVisited(O, V, OF, NV).
-% -If the move is a movement consider the only the position to consider it visited
+% -If the move is a movement consider only the position to consider it visited
 filterVisited([act(pos(cell(X,Y),D), A)|O], V, OF, NV) :- isMovement(A), member(pos(cell(X,Y),Dany), V), !, filterVisited(O, V, OF, NV).
 % -The new visited state can be added directly in the clause head as possible moves always leads to different states (see 'next')
 filterVisited([act(pos(cell(X,Y),D), A)|O], V, [act(pos(cell(X,Y),D), A)|OF], [pos(cell(X,Y),D)|NV]) :- filterVisited(O, V, OF, NV).
@@ -117,7 +117,7 @@ filterVisited([act(pos(cell(X,Y),D), A)|O], V, [act(pos(cell(X,Y),D), A)|OF], [p
 % A* algorithm
 % -Simple wrapper: determine the goal, call the algorithm with the current cell as the starting point and the only visited state, then destroy the goal
 findMove(L) :- establishGoal, curPos(pos(cell(X,Y), D)), findMove([[act(pos(cell(X,Y), D), null)]], [pos(cell(X,Y), D)], L), destroyGoal.
-% -If the last move of the first path leads to a goal the optimal path has been found (possible path are kept sorted by increasing cost function)
+% -If the last move of the first path leads to a goal the optimal path has been found  as the first one (possible path are kept sorted by increasing cost function)
 findMove([[act(pos(cell(X,Y),D), Act)|ShOth]|Oth], _, [act(pos(cell(X,Y),D), Act)|ShOth]) :- isGoal(cell(X,Y)), !.
 % -Generate all possible moves from the most promising path (the first one), filter them for visited states, sort them by heuristic, append the already explored path and merge the new paths with the one not considered, then repeat with the new paths list and updated visited states list
 findMove([[act(pos(cell(X,Y),D), Act)|ShOth]|Oth], Vis, L) :- next(pos(cell(X,Y),D), Succ),
