@@ -1,11 +1,11 @@
 %==============================================
-% WorldTheory.pl for actor webguiexecutor
+% WorldTheory.pl for actor cleaner
 %==============================================
 /*
 For a QActor as a singleton statically degined in the model
 */
-myname(qatuwebguiexecutor).	%%old version (deprecated)
-actorobj(qatuwebguiexecutor).	%% see registerActorInProlog18 in QActor
+myname(qatucleaner).	%%old version (deprecated)
+actorobj(qatucleaner).	%% see registerActorInProlog18 in QActor
 
 /*
 For a QActor instance of name=Name dynamically created
@@ -81,7 +81,7 @@ evalGuard( G ) :-
 
 output( M ):-stdout <- println( M ).
 %-------------------------------------------------
-%  TuProlo FEATURES of the QActor webguiexecutor
+%  TuProlo FEATURES of the QActor cleaner
 %-------------------------------------------------
 dialog( FileName ) :-  
 	java_object('javax.swing.JFileChooser', [], Dialog),
@@ -89,7 +89,7 @@ dialog( FileName ) :-
 	Dialog <- getSelectedFile returns File,
 	File <- getName returns FileName. 		 
 
-%% :- stdout <- println(  "hello from world theory of webguiexecutor" ). 
+%% :- stdout <- println(  "hello from world theory of cleaner" ). 
 
 %-------------------------------------------------
 %  UTILITIES for TuProlog computations
@@ -140,21 +140,11 @@ inc(I,K,N):-
 actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 
 %-------------------------------------------------
-%  User static rules about webguiexecutor
+%  User static rules about cleaner
 %------------------------------------------------- 
-tempThreshold( 25).
-timeInterval( 32400,39600).
-sonarThreshold( 5).
-model( thermometer,20).
-model( clock,36300).
-model( blinker,off).
-validConditions:-model( thermometer,T),model( clock,H),tempThreshold( Tmax),timeInterval( Hmin,Hmax),eval( le,T,Tmax),eval( ge,H,Hmin),eval( le,H,Hmax).
-inFrontOfSonar:-sonarThreshold( Dmax),curSonarDistance( D),eval( le,D,Dmax).
-changedModelAction( thermometer,_):-validConditions, ! .
-changedModelAction( thermometer,_):-sendMsg( webguiexecutor,ctrlAppl,ctrlAppl( halt)).
-changedModelAction( clock,_):-validConditions, ! .
-changedModelAction( clock,_):-sendMsg( webguiexecutor,ctrlAppl,ctrlAppl( halt)).
-changedModelAction( blinker,V):-sendMsg( blinker,ctrlMsg,ctrlMsg( blinker,V)).
+defaultPosition( pos( cell( 0,0),n)).
+size( 5,5).
+tileSize( 350).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

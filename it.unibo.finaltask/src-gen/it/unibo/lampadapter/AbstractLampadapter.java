@@ -108,7 +108,8 @@ public abstract class AbstractLampadapter extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("ctrlLamp",-1);
 	    	String myselfName = "ctrlLamp";  
-	    	printCurrentEvent(false);
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?enabled" )) != null ){
+	    	{//actionseq
 	    	//onEvent 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("ctrlEvent(hueLamp,off)");
@@ -136,6 +137,8 @@ public abstract class AbstractLampadapter extends QActor {
 	    			//end arg2
 	    			it.unibo.frontend.hueClient.sendPut(this,arg1,arg2 );
 	    			}
+	    	}
+	    	};//actionseq
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"lampadapter_"+myselfName,false,true);
 	    }catch(Exception e_ctrlLamp){  

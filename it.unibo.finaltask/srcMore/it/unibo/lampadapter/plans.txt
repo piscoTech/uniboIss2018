@@ -1,6 +1,4 @@
 plan(1,init, sentence(true,move(print("Lamp Adapter started")),'','' ))
 plan(2,init, sentence(true,not here StateMoveNormal,'','' ))
-plan(1,ctrlLamp, sentence(true,printCurrentEvent(false),'','' ))
-plan(2,ctrlLamp, sentence(true,eventswitch(ctrlEvent, Â»ctrlEvent( hueLamp,off), not here StateMoveNormal ),'','' ))
-plan(3,ctrlLamp, sentence(true,eventswitch(ctrlEvent, Â»ctrlEvent( hueLamp,on), not here StateMoveNormal ),'','' ))
-plan(4,ctrlLamp, sentence(true,move(resumeplan),'','' ))
+plan(1,ctrlLamp, sentence( enabled,not here StateMoveNormal,'','' ))
+plan(2,ctrlLamp, sentence(true,move(resumeplan),'','' ))

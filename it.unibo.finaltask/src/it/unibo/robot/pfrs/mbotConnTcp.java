@@ -19,7 +19,7 @@ public class mbotConnTcp {
 	protected static BufferedReader inFromServer;
 	private static final QActor SELF_QA = null;
 	private static final int FOREVER = -1;
-	private static final int ROTATE_TIME = 500;
+	private static final int ROTATE_TIME = 350;
 
 	public mbotConnTcp() {
 		try {

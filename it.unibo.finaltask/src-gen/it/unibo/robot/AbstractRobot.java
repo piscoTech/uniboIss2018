@@ -96,7 +96,7 @@ public abstract class AbstractRobot extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"robot_"+myselfName,false,
 	          new StateFun[]{stateTab.get("execMove") }, 
-	          new String[]{"true","E","moveRobot" },
+	          new String[]{"true","M","moveRobot" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
@@ -108,7 +108,6 @@ public abstract class AbstractRobot extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
-	    	printCurrentMessage(false);
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
 	    	curT = Term.createTerm("moveRobot(h)");
@@ -174,10 +173,10 @@ public abstract class AbstractRobot extends QActor {
 	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		String parg="ctrlAppl(X)";
-	    		/* RaiseEvent */
+	    		/* SendDispatch */
 	    		parg = updateVars(Term.createTerm("moveRobot(X)"),  Term.createTerm("moveRobot(x(X))"), 
 	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) emit( "ctrlAppl", parg );
+	    		if( parg != null ) sendMsg("ctrlAppl","webguiexecutor", QActorContext.dispatch, parg ); 
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robot_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  

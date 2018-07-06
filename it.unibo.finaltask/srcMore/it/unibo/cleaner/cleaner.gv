@@ -1,0 +1,33 @@
+/*
+*
+* A GraphViz DOT FSM description 
+* Please use a GraphViz visualizer (like http://www.webgraphviz.com)
+*  
+*/
+
+digraph finite_state_machine {
+	rankdir=LR
+	size="8,5"
+	
+	init [ color = red ][ fontcolor = red ][ penwidth = 3 ]
+	waitStart [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	cleanStatus [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	doMove [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	stopClean [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	cleanPortion [ color = black ][ fontcolor = black ][ penwidth = 3 ]
+	
+	doMove -> doMove [ label = "timeout(400)" ][ color = green ][ fontcolor = green ]
+	cleanPortion -> doMove [ label = "startAutoClean" ][ color = black ][ fontcolor = black ]
+	stopClean -> cleanPortion [ label = "moveFinished" ][ color = black ][ fontcolor = black ]
+	doMove -> cleanStatus [ label = "stopAutoClean" ][ color = black ][ fontcolor = black ]
+	init -> waitStart [ label = "switch" ][ color = black ][ fontcolor = black ]
+	cleanPortion -> handleToutBuiltIn [ label = "timeout(36000000)" ][ color = green ][ fontcolor = green ]
+	cleanStatus -> cleanStatus [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
+	stopClean -> cleanStatus [ label = "waitAutoClean" ][ color = black ][ fontcolor = black ]
+	cleanPortion -> cleanStatus [ label = "waitAutoClean" ][ color = black ][ fontcolor = black ]
+	waitStart -> cleanPortion [ label = "startAutoClean" ][ color = black ][ fontcolor = black ]
+	cleanStatus -> waitStart [ label = "[ ?? doneCleaning ], switch" ][ color = black ][ fontcolor = black ]
+	doMove -> stopClean [ label = "moveFinished" ][ color = black ][ fontcolor = black ]
+	waitStart -> handleToutBuiltIn [ label = "timeout(36000000)" ][ color = green ][ fontcolor = green ]
+	stopClean -> handleToutBuiltIn [ label = "timeout(360000)" ][ color = green ][ fontcolor = green ]
+}

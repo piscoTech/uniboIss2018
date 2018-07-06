@@ -2,12 +2,12 @@
 /*
 This code is generated only ONCE
 */
-package it.unibo.astar;
+package it.unibo.cleaner;
 import it.unibo.is.interfaces.IOutputEnvView;
 import it.unibo.qactors.QActorContext;
 
-public class Astar extends AbstractAstar { 
-	public Astar(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
+public class Cleaner extends AbstractCleaner { 
+	public Cleaner(String actorId, QActorContext myCtx, IOutputEnvView outEnvView )  throws Exception{
 		super(actorId, myCtx, outEnvView);
 	}
 /*
