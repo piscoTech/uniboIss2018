@@ -58,13 +58,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	stateTab.put("init",init);
 	    	stateTab.put("listen",listen);
 	    	stateTab.put("startLogic",startLogic);
-	    	stateTab.put("checkInitialPosition",checkInitialPosition);
-	    	stateTab.put("checkInitialSonarDistance",checkInitialSonarDistance);
-	    	stateTab.put("startCleaning",startCleaning);
-	    	stateTab.put("clean",clean);
-	    	stateTab.put("checkStop",checkStop);
-	    	stateTab.put("cleanStop",cleanStop);
-	    	stateTab.put("handleSensor",handleSensor);
+	    	stateTab.put("printEv",printEv);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
 	    	try{	
@@ -82,9 +76,6 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("init",-1);
 	    	String myselfName = "init";  
-	    	parg = "consult(\"./resourceModel.pl\")";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = "\"Application ready\"";
 	    	println( temporaryStr );  
 	     connectToMqttServer("tcp://localhost:1883");
@@ -104,8 +95,8 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	String myselfName = "listen";  
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
-	          new StateFun[]{stateTab.get("startLogic"), stateTab.get("handleSensor") }, 
-	          new String[]{"true","M","ctrlAppl", "true","E","sensorEvent" },
+	          new StateFun[]{stateTab.get("startLogic"), stateTab.get("printEv"), stateTab.get("printEv") }, 
+	          new String[]{"true","M","startAppl", "true","E","sonar", "true","E","sonarDetect" },
 	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
@@ -117,198 +108,32 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("startLogic",-1);
 	    	String myselfName = "startLogic";  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?validConditions" )) != null ){
-	    	{//actionseq
-	    	//onMsg 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlAppl(go)");
-	    	if( currentMessage != null && currentMessage.msgId().equals("ctrlAppl") && 
-	    		pengine.unify(curT, Term.createTerm("ctrlAppl(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="shouldStart";
-	    		/* AddRule */
-	    		parg = updateVars(Term.createTerm("ctrlAppl(X)"),  Term.createTerm("ctrlAppl(go)"), 
-	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	};//actionseq
-	    	}
-	    	else{ temporaryStr = "\"Sensors conditions invalid, cannot clean\"";
+	    	temporaryStr = "\"Application started...\"";
 	    	println( temporaryStr );  
-	    	}
-	    	//switchTo checkInitialPosition
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "checkInitialPosition",false, true, " ??shouldStart"); 
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(2000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "startLogic";
+	    	if( ! aar.getGoon() ) return ;
+	    	temporaryStr = "\"Application done!\"";
+	    	println( temporaryStr );  
+	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
 	    }catch(Exception e_startLogic){  
 	    	 println( getName() + " plan=startLogic WARNING:" + e_startLogic.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//startLogic
 	    
-	    StateFun checkInitialPosition = () -> {	
+	    StateFun printEv = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("checkInitialPosition",-1);
-	    	String myselfName = "checkInitialPosition";  
-	    	temporaryStr = "\"Sensors conditions are valid, checking initial position...\"";
-	    	println( temporaryStr );  
-	    	//bbb
-	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,true,
-	          new StateFun[]{stateTab.get("checkInitialSonarDistance") }, 
-	          new String[]{"true","E","sonar" },
-	          1000, "listen" );//msgTransition
-	    }catch(Exception e_checkInitialPosition){  
-	    	 println( getName() + " plan=checkInitialPosition WARNING:" + e_checkInitialPosition.getMessage() );
+	     PlanRepeat pr = PlanRepeat.setUp("printEv",-1);
+	    	String myselfName = "printEv";  
+	    	printCurrentEvent(false);
+	    	repeatPlanNoTransition(pr,myselfName,"webguiexecutor_"+myselfName,false,true);
+	    }catch(Exception e_printEv){  
+	    	 println( getName() + " plan=printEv WARNING:" + e_printEv.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//checkInitialPosition
-	    
-	    StateFun checkInitialSonarDistance = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("checkInitialSonarDistance",-1);
-	    	String myselfName = "checkInitialSonarDistance";  
-	    	temporaryStr = "curSonarDistance(D)";
-	    	removeRule( temporaryStr );  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonar(sonar1,player,D)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonar") && 
-	    		pengine.unify(curT, Term.createTerm("sonar(SONAR,X,DISTANCE)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="curSonarDistance(D)";
-	    			/* AddRule */
-	    			parg = updateVars(Term.createTerm("sonar(SONAR,X,DISTANCE)"),  Term.createTerm("sonar(sonar1,player,D)"), 
-	    				    		  					Term.createTerm(currentEvent.getMsg()), parg);
-	    			if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//switchTo startCleaning
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "startCleaning",false, true, " !?inFrontOfSonar"); 
-	    }catch(Exception e_checkInitialSonarDistance){  
-	    	 println( getName() + " plan=checkInitialSonarDistance WARNING:" + e_checkInitialSonarDistance.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//checkInitialSonarDistance
-	    
-	    StateFun startCleaning = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("startCleaning",-1);
-	    	String myselfName = "startCleaning";  
-	    	temporaryStr = "\"Application started...\"";
-	    	println( temporaryStr );  
-	    	parg = "changeModelItem(blinker,on)";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"startAutoClean(X)","startAutoClean(true)", guardVars ).toString();
-	    	sendMsg("startAutoClean","cleaner", QActorContext.dispatch, temporaryStr ); 
-	    	//switchTo clean
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "clean",false, false, null); 
-	    }catch(Exception e_startCleaning){  
-	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//startCleaning
-	    
-	    StateFun clean = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_clean",0);
-	     pr.incNumIter(); 	
-	    	String myselfName = "clean";  
-	    	//bbb
-	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
-	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("checkStop"), stateTab.get("cleanStop") }, 
-	          new String[]{"true","E","sensorEvent", "true","M","ctrlAppl", "true","M","stopAutoClean" },
-	          36000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_clean){  
-	    	 println( getName() + " plan=clean WARNING:" + e_clean.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//clean
-	    
-	    StateFun checkStop = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("checkStop",-1);
-	    	String myselfName = "checkStop";  
-	    	//onMsg 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("ctrlAppl(halt)");
-	    	if( currentMessage != null && currentMessage.msgId().equals("ctrlAppl") && 
-	    		pengine.unify(curT, Term.createTerm("ctrlAppl(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="shouldStop";
-	    		/* AddRule */
-	    		parg = updateVars(Term.createTerm("ctrlAppl(X)"),  Term.createTerm("ctrlAppl(halt)"), 
-	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) addRule(parg);	    		  					
-	    	}
-	    	//switchTo cleanStop
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "cleanStop",false, true, " ??shouldStop"); 
-	    }catch(Exception e_checkStop){  
-	    	 println( getName() + " plan=checkStop WARNING:" + e_checkStop.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//checkStop
-	    
-	    StateFun cleanStop = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("cleanStop",-1);
-	    	String myselfName = "cleanStop";  
-	    	parg = "changeModelItem(blinker,off)";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"stopAutoClean(X)","stopAutoClean(true)", guardVars ).toString();
-	    	sendMsg("stopAutoClean","cleaner", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(h)", guardVars ).toString();
-	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	temporaryStr = "\"Application stopped.\"";
-	    	println( temporaryStr );  
-	    	//switchTo listen
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "listen",false, false, null); 
-	    }catch(Exception e_cleanStop){  
-	    	 println( getName() + " plan=cleanStop WARNING:" + e_cleanStop.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//cleanStop
-	    
-	    StateFun handleSensor = () -> {	
-	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp("handleSensor",-1);
-	    	String myselfName = "handleSensor";  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sensorEvent(O,P)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sensorEvent") && 
-	    		pengine.unify(curT, Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			String parg="changeModelItem(O,P)";
-	    			/* PHead */
-	    			parg =  updateVars( Term.createTerm("sensorEvent(ORIGIN,PAYLOAD)"), 
-	    			                    Term.createTerm("sensorEvent(O,P)"), 
-	    				    		  	Term.createTerm(currentEvent.getMsg()), parg);
-	    				if( parg != null ) {
-	    				    aar = QActorUtils.solveGoal(this,myCtx,pengine,parg,"",outEnvView,86400000);
-	    					//println(getName() + " plan " + curPlanInExec  +  " interrupted=" + aar.getInterrupted() + " action goon="+aar.getGoon());
-	    					if( aar.getInterrupted() ){
-	    						curPlanInExec   = "handleSensor";
-	    						if( aar.getTimeRemained() <= 0 ) addRule("tout(demo,"+getName()+")");
-	    						if( ! aar.getGoon() ) return ;
-	    					} 			
-	    					if( aar.getResult().equals("failure")){
-	    						if( ! aar.getGoon() ) return ;
-	    					}else if( ! aar.getGoon() ) return ;
-	    				}
-	    	}
-	    	//switchTo cleanStop
-	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "cleanStop",false, true, " not !?validConditions" 
-	              ); 
-	    }catch(Exception e_handleSensor){  
-	    	 println( getName() + " plan=handleSensor WARNING:" + e_handleSensor.getMessage() );
-	    	 QActorContext.terminateQActorSystem(this); 
-	    }
-	    };//handleSensor
+	    };//printEv
 	    
 	    protected void initSensorSystem(){
 	    	//doing nothing in a QActor
