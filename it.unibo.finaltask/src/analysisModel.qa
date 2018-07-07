@@ -17,7 +17,7 @@ Event lampEvent		: lampEvent(VERB, INFO)			// Feedback for controlling the real 
 Dispatch moveFinished 	: moveFinished(X)
 Dispatch startAutoClean	: startAutoClean(X)
 Dispatch stopAutoClean	: stopAutoClean(X)
-Dispatch waitAutoClean	: waitAutoClean(X)
+Dispatch retryAutoClean	: retryAutoClean(X)
 
 pubSubServer "tcp://localhost:1883"
 
@@ -140,20 +140,61 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo waitStart
 	
-	Plan cleanStatus [
+	Plan cleanKBStatus [
 		[?? status(cell(X,Y), S)]
-			println("Cleaning...")
-		else
-			addRule doneCleaning
+			println("Cleaning KB (1/4)...")
+		else {
+			addRule doneCleaning;
+			println("Cleaning KB (1/4)...")
+		}
 	]
-	switchTo [?? doneCleaning] waitStart
+	switchTo [?? doneCleaning] cleanKBMoves
 	finally repeatPlan
+	
+	Plan cleanKBMoves [
+		[?? move(A, pos(cell(X,Y),D))]
+			println("Cleaning KB (2/4)...")
+		else {
+			addRule doneCleaning;
+			println("Cleaning KB (2/4)...")
+		}
+	]
+	switchTo [?? doneCleaning] cleanKBNextPositions
+	finally repeatPlan
+	
+	Plan cleanKBNextPositions [
+		[?? nextPos(pos(cell(X,Y), D))]
+			println("Cleaning KB (3/4)...")
+		else {
+			addRule doneCleaning;
+			println("Cleaning KB (3/4)...")
+		}
+	]
+	switchTo [?? doneCleaning] cleanKBMisc
+	finally repeatPlan
+	
+	Plan cleanKBMisc [
+		removeRule overrideCleanStatus;
+		
+		println("Cleaning KB (4/4)...")
+	]
+	switchTo waitStart
 	
 	Plan waitStart [
 		[!? status(cell(X,Y), S)] println("Clean failed!!!"); // Should never happen, if so something went wrong
 		demo loadStatus;
 		demo loadInitialPosition;
 		demo visitCurrent;
+
+//		demo obstacle(cell(0,1));
+//		demo obstacle(cell(1,1));
+//		demo obstacle(cell(2,1));
+//		demo obstacle(cell(3,1));
+//		
+//		demo obstacle(cell(0,3));
+//		demo obstacle(cell(3,3));
+//		demo obstacle(cell(2,3));
+//		demo obstacle(cell(1,3));
 		
 		println("Auto cleaner ready to start...")
 	]
@@ -163,17 +204,27 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	Plan cleanPortion [
 		[!? findMove(L)]
 			demo registerMoves(L)
-		else {
-			println("Cannot reach the goal due to obstacles");
-			selfMsg waitAutoClean : waitAutoClean(true);
-			forward webguiexecutor -m stopAutoClean : stopAutoClean(true)
+		else { // Cannot reach any goal
+			[!? fullyExplored] {
+				// Room if fully cleaned (with possibly some off-limits parts not cleaned) but the end point is not reachable
+				println("Cannot reach the goal due to obstacles");
+				selfMsg stopAutoClean : stopAutoClean(true);
+				forward webguiexecutor -m stopAutoClean : stopAutoClean(true)
+			} else {
+				// Some parts of the room are unreachable due to obstacle and not cleanable
+				// Ignore them and to to the end point
+				println("Ignoring some parts of the room due to obstacles, going to the end point");
+				addRule overrideCleanStatus;
+				selfMsg retryAutoClean : retryAutoClean(true)
+			}
 		};
 		
 		[!? move(_, _)] selfMsg startAutoClean : startAutoClean(true);
 		println("---------------------")
 	]
 	transition stopAfter 36000000
-		whenMsg waitAutoClean -> cleanStatus,
+		whenMsg retryAutoClean -> cleanPortion,
+		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg startAutoClean -> doMove
 	
 	Plan doMove [
@@ -190,12 +241,12 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	] transition
 		whenTime 400 -> doMove,
 		whenMsg moveFinished -> stopClean,
-		whenMsg stopAutoClean -> cleanStatus
+		whenMsg stopAutoClean -> cleanKBStatus
 		
 	Plan stopClean [
 		[!? jobDone] {
 			println("Room is now clean!");
-			selfMsg waitAutoClean : waitAutoClean(true);
+			selfMsg stopAutoClean : stopAutoClean(true);
 			forward webguiexecutor -m stopAutoClean : stopAutoClean(true)
 		} else {
 			println("Cleaned a portion of the room!");
@@ -203,8 +254,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		}
 	]
 	transition stopAfter 360000
-		whenMsg waitAutoClean -> cleanStatus,
-		whenMsg moveFinished -> cleanPortion
+		whenMsg moveFinished -> cleanPortion,
+		whenMsg stopAutoClean -> cleanKBStatus
 }
 
 QActor blinker context ctxFinalSysAnalysis -pubsub {

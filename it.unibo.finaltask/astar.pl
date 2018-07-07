@@ -24,6 +24,10 @@ visit(cell(_,_)).
 obstacle(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), x)).
 obstacle(cell(_,_)).
 
+% Whether there are no obstacle in the given cell
+isWalkable(cell(X,Y)) :- status(cell(X, Y), 0).
+isWalkable(cell(X,Y)) :- status(cell(X, Y), 1).
+
 % Save what cell will become the current position after a move is completed
 registerNext(pos(cell(X,Y), D)) :- replaceRule(nextPos(pos(cell(Xo,Yo), Do)), nextPos(pos(cell(X,Y), D))).
 % Update the current position with the next one, the upcoming cell data is removed
@@ -31,15 +35,14 @@ actualizeNext :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D)))
 	replaceRule(curPos(pos(cell(Xo,Yo), Do)), curPos(pos(cell(X,Y), D))), visit(cell(X,Y)).
 
 % Whether all non-obstacle cells have been cleaned, i.e. there is no non-cleaned and non-obstacle cells
+% -Set from QActor side when ignoring parts of the room due to obstacles
+fullyExplored :- overrideCleanStatus.
 fullyExplored :- status(cell(_,_), 0), !, fail.
 fullyExplored.
 
 % Decide towards which cell the robot should move to: a non-cleaned one if 'fullyExplored' is false, the bottom-right corner otherwise
 establishGoal(cell(Xt,Yt)) :- fullyExplored, !, size(Xm, Ym), Xt is Xm-1, Yt is Ym-1, output(goal(Xt,Yt)).
 establishGoal(cell(X,Y)) :- status(cell(X,Y), 0), output(goal(X,Y)).
-
-% Whether the given cell is the goal towards which the robot should move to
-%isGoal(cell(X,Y)) :- goal(X,Y).
 
 % Whether the robot should stop moving automatically, i.e. 'fullyExplored' is true and the robot is in the bottom-right corner
 jobDone :- fullyExplored, curPos(pos(cell(X,Y), _)), Xt is X+1, Yt is Y+1, size(Xt, Yt).
@@ -52,24 +55,23 @@ rotate(pos(cell(X,Y), w), [act(pos(cell(X,Y), s), a), act(pos(cell(X,Y), n), d)]
 
 % The neighboring states considering rotations and movement forward
 % -Facing north
-next(pos(cell(X,Y),n), [act(pos(cell(X,Y1),n), w(STEP))|R]) :- Y > 0, !, Y1 is Y-1, tileSize(STEP),
-	rotate(pos(cell(X,Y),n), R).
+next(pos(cell(X,Y),n), [act(pos(cell(X,Y1),n), w(STEP))|R]) :- Y > 0, Y1 is Y-1, isWalkable(cell(X,Y1)), !,
+	tileSize(STEP), rotate(pos(cell(X,Y),n), R).
 next(pos(cell(X,Y),n), R) :- rotate(pos(cell(X,Y),n), R).
 % -Facing east
-next(pos(cell(X,Y),e), [act(pos(cell(X1,Y),e), w(STEP))|R]) :- size(Xm,_), X < Xm-1, !, X1 is X+1, tileSize(STEP),
-	rotate(pos(cell(X,Y),e), R).
+next(pos(cell(X,Y),e), [act(pos(cell(X1,Y),e), w(STEP))|R]) :- size(Xm,_), X < Xm-1, X1 is X+1, isWalkable(cell(X1,Y)), !,
+	tileSize(STEP), rotate(pos(cell(X,Y),e), R).
 next(pos(cell(X,Y),e), R) :- rotate(pos(cell(X,Y),e), R).
 % -Facing south
-next(pos(cell(X,Y),s), [act(pos(cell(X,Y1),s), w(STEP))|R]) :- size(_,Ym), Y < Ym-1, !, Y1 is Y+1, tileSize(STEP),
-	rotate(pos(cell(X,Y),s), R).
+next(pos(cell(X,Y),s), [act(pos(cell(X,Y1),s), w(STEP))|R]) :- size(_,Ym), Y < Ym-1, Y1 is Y+1, isWalkable(cell(X,Y1)), !,
+	tileSize(STEP), rotate(pos(cell(X,Y),s), R).
 next(pos(cell(X,Y),s), R) :- rotate(pos(cell(X,Y),s), R).
 % -Facing west
-next(pos(cell(X,Y),w), [act(pos(cell(X1,Y),w), w(STEP))|R]) :- X > 0, !, X1 is X-1, tileSize(STEP),
-	rotate(pos(cell(X,Y),w), R).
+next(pos(cell(X,Y),w), [act(pos(cell(X1,Y),w), w(STEP))|R]) :- X > 0, X1 is X-1, isWalkable(cell(X1,Y)), !,
+	tileSize(STEP), rotate(pos(cell(X,Y),w), R).
 next(pos(cell(X,Y),w), R) :- rotate(pos(cell(X,Y),w), R).
 
-% Heuristic for the specified cell as Manhattan distance, rotation is ignored
-% The 2nd argument represent the goal relative to which the calculation is done
+% Heuristic for the specified cell as Manhattan distance to the given goal (2nd argument), rotation is ignored
 h(cell(X,Y), cell(Xt,Yt), H) :- H is abs(X-Xt)+abs(Y-Yt).
 
 % Given a list of possible moves (1st argument) and past path that leads to the state from which the possible moves are calculated (2nd argument), returns (3rd argument) a list of possible paths (a list of list of moves) by appending the given path to each moves of the given list (order is preserved)
@@ -108,7 +110,7 @@ filterVisited([act(pos(cell(X,Y),D), A)|O], V, OF, NV) :- isMovement(A), member(
 filterVisited([act(pos(cell(X,Y),D), A)|O], V, [act(pos(cell(X,Y),D), A)|OF], [pos(cell(X,Y),D)|NV]) :- filterVisited(O, V, OF, NV).
 
 % A* algorithm
-% -Simple wrapper: determine the goal, call the algorithm with the current cell as the starting point and the only visited state, then destroy the goal
+% -Simple wrapper: determine the goal, call the algorithm with the current cell as the starting point and the only visited state
 findMove(L) :- establishGoal(G), curPos(pos(cell(X,Y), D)), findMove(G, [[act(pos(cell(X,Y), D), null)]], [pos(cell(X,Y), D)], L).
 % -If the last move of the first path leads to a goal the optimal path has been found  as the first one (possible path are kept sorted by increasing cost function)
 findMove(G, [[act(pos(G,D), Act)|ShOth]|Oth], _, [act(pos(G,D), Act)|ShOth]) :- !.
