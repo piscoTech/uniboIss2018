@@ -36,7 +36,7 @@ actualizeNext :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D)))
 
 % Whether all non-obstacle cells have been cleaned, i.e. there is no non-cleaned and non-obstacle cells
 % -Set from QActor side when ignoring parts of the room due to obstacles
-fullyExplored :- overrideCleanStatus.
+fullyExplored :- overrideCleanStatus, !.
 fullyExplored :- status(cell(_,_), 0), !, fail.
 fullyExplored.
 
@@ -98,7 +98,7 @@ mergeSorted([[act(pos(cell(X1,Y1),D1), A1)|SO1]|O1], [[act(pos(cell(X2,Y2),D2), 
 % Whether a given action is a rotation or a movement (forward)
 isRotation(a).
 isRotation(d).
-isMovement(w(_)). % Replace with 'isMovement(A) :- not(isRotation(A)).' if it doesn't work (I've not tested the current version)
+isMovement(w(_)).
 
 % Given a list of possible moves (1st argument) and a list of visited states (cell plus rotation, 2nd argument), returns (3rd argument) only those moves that lead to an unvisited state and the updated visited state list (4th argument)
 filterVisited([], V, [], V).
