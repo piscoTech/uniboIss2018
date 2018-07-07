@@ -15,6 +15,6 @@ digraph finite_state_machine {
 	
 	listen -> listen [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]
 	init -> listen [ label = "switch" ][ color = black ][ fontcolor = black ]
+	listen -> handleToutBuiltIn [ label = "timeout(36000000)" ][ color = green ][ fontcolor = green ]
 	listen -> execMove [ label = "moveRobot" ][ color = red ][ fontcolor = red ][ dir = both ]
-	listen -> handleToutBuiltIn [ label = "timeout(3600000)" ][ color = green ][ fontcolor = green ]
 }

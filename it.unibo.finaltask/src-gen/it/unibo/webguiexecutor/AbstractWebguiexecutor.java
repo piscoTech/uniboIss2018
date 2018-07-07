@@ -106,7 +106,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
 	          new StateFun[]{stateTab.get("startLogic"), stateTab.get("handleSensor") }, 
 	          new String[]{"true","M","ctrlAppl", "true","E","sensorEvent" },
-	          3600000, "handleToutBuiltIn" );//msgTransition
+	          36000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -218,7 +218,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("checkStop"), stateTab.get("cleanStop") }, 
 	          new String[]{"true","E","sensorEvent", "true","M","ctrlAppl", "true","M","stopAutoClean" },
-	          36000, "handleToutBuiltIn" );//msgTransition
+	          36000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_clean){  
 	    	 println( getName() + " plan=clean WARNING:" + e_clean.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

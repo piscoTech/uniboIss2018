@@ -68,7 +68,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo listen
 	
-	Plan listen [] transition stopAfter 36000000
+	Plan listen [] transition stopAfter 3600000
 		whenMsg ctrlAppl -> startLogic,
 		whenEvent sensorEvent -> handleSensor
 	finally repeatPlan
@@ -101,7 +101,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo clean
 	
-	Plan clean [] transition stopAfter 36000000
+	Plan clean [] transition stopAfter 36000
 		whenEvent sensorEvent -> handleSensor,
 		whenMsg ctrlAppl -> checkStop,
 		whenMsg stopAutoClean -> cleanStop // Clean signaled completion of operations
@@ -144,33 +144,33 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		[?? status(cell(X,Y), S)]
 			println("Cleaning KB (1/4)...")
 		else {
-			addRule doneCleaningKB;
+			addRule doneCleaning;
 			println("Cleaning KB (1/4)...")
 		}
 	]
-	switchTo [?? doneCleaningKB] cleanKBMoves
+	switchTo [?? doneCleaning] cleanKBMoves
 	finally repeatPlan
 	
 	Plan cleanKBMoves [
 		[?? move(A, pos(cell(X,Y),D))]
 			println("Cleaning KB (2/4)...")
 		else {
-			addRule doneCleaningKB;
+			addRule doneCleaning;
 			println("Cleaning KB (2/4)...")
 		}
 	]
-	switchTo [?? doneCleaningKB] cleanKBNextPositions
+	switchTo [?? doneCleaning] cleanKBNextPositions
 	finally repeatPlan
 	
 	Plan cleanKBNextPositions [
 		[?? nextPos(pos(cell(X,Y), D))]
 			println("Cleaning KB (3/4)...")
 		else {
-			addRule doneCleaningKB;
+			addRule doneCleaning;
 			println("Cleaning KB (3/4)...")
 		}
 	]
-	switchTo [?? doneCleaningKB] cleanKBMisc
+	switchTo [?? doneCleaning] cleanKBMisc
 	finally repeatPlan
 	
 	Plan cleanKBMisc [
@@ -181,6 +181,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	switchTo waitStart
 	
 	Plan waitStart [
+		[!? status(cell(X,Y), S)] println("Clean failed!!!"); // Should never happen, if so something went wrong
 		demo loadStatus;
 		demo loadInitialPosition;
 		demo visitCurrent;
@@ -189,13 +190,11 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 //		demo obstacle(cell(1,1));
 //		demo obstacle(cell(2,1));
 //		demo obstacle(cell(3,1));
-//		demo obstacle(cell(4,1));
 
-//		demo obstacle(cell(0,2));
-//		demo obstacle(cell(1,2));
-//		demo obstacle(cell(2,2));
+//		demo obstacle(cell(0,3));
+//		demo obstacle(cell(3,3));
 //		demo obstacle(cell(2,3));
-//		demo obstacle(cell(2,4));
+//		demo obstacle(cell(1,3));
 		
 		println("Auto cleaner ready to start...")
 	]
@@ -224,8 +223,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		println("---------------------")
 	]
 	transition stopAfter 36000000
-		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg retryAutoClean -> cleanPortion,
+		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg startAutoClean -> doMove
 	
 	Plan doMove [
@@ -241,12 +240,10 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		println("---------------------")
 	] transition
 		whenTime 400 -> doMove,
-		whenMsg stopAutoClean -> cleanKBStatus,
-		whenMsg moveFinished -> stopClean
+		whenMsg moveFinished -> stopClean,
+		whenMsg stopAutoClean -> cleanKBStatus
 		
 	Plan stopClean [
-		demo actualizeNext;
-		
 		[!? jobDone] {
 			println("Room is now clean!");
 			selfMsg stopAutoClean : stopAutoClean(true);
@@ -256,7 +253,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 			selfMsg moveFinished : moveFinished(true)
 		}
 	]
-	transition stopAfter 36000000
+	transition stopAfter 360000
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> cleanPortion
 }
@@ -267,7 +264,7 @@ QActor blinker context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo listen
 	
-	Plan listen [] transition stopAfter 36000000
+	Plan listen [] transition stopAfter 3600000
 		whenMsg ctrlMsg -> checkStart
 	finally repeatPlan	
 	
@@ -308,7 +305,7 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo listen
 	
-	Plan listen [] transition stopAfter 36000000
+	Plan listen [] transition stopAfter 3600000
 		whenMsg moveRobot -> execMove
 	finally repeatPlan
 		
@@ -333,7 +330,7 @@ QActor lampadapter context ctxFinalSysAnalysis -pubsub {
 	]
 	switchTo listen
 	
-	Plan listen [] transition stopAfter 36000000
+	Plan listen [] transition stopAfter 3600000
 		whenEvent ctrlEvent -> ctrlLamp
 	finally repeatPlan
 	

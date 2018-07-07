@@ -6,7 +6,7 @@ loadCol(_, Y) :- size(_, Ymax), Y >= Ymax, !.
 loadCol(X, Y) :- assertz(status(cell(X,Y), 0)), Y1 is Y+1, loadCol(X, Y1).
 
 % Set the current position as the initial one as specified elsewhere
-loadInitialPosition :- defaultPosition(pos(cell(X,Y), D)), replaceRule(curPos(pos(cell(Xo,Yo), D)), curPos(pos(cell(X,Y), D))).
+loadInitialPosition :- defaultPosition(pos(cell(X,Y), D)), replaceRule(curPos(pos(cell(Xo,Yo), Do)), curPos(pos(cell(X,Y), D))).
 
 % Print the current position and the status of all cells, i.e. a map of the room
 printStatus :- curPos(pos(cell(X,Y), D)), output(curPos(pos(cell(X,Y), D))), printRow(0).
