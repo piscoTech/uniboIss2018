@@ -97,7 +97,7 @@ public abstract class AbstractLampadapter extends QActor {
 	     msgTransition( pr,myselfName,"lampadapter_"+myselfName,false,
 	          new StateFun[]{stateTab.get("ctrlLamp") }, 
 	          new String[]{"true","E","ctrlEvent" },
-	          36000000, "handleToutBuiltIn" );//msgTransition
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 

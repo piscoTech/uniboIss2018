@@ -100,7 +100,7 @@ public abstract class AbstractBlinker extends QActor {
 	     msgTransition( pr,myselfName,"blinker_"+myselfName,false,
 	          new StateFun[]{stateTab.get("checkStart") }, 
 	          new String[]{"true","M","ctrlMsg" },
-	          36000000, "handleToutBuiltIn" );//msgTransition
+	          3600000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
