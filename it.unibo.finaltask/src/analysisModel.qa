@@ -304,7 +304,7 @@ QActor blinker context ctxFinalSysAnalysis -pubsub {
 QActor robot context ctxFinalSysAnalysis -pubsub {
 	Plan init normal [
 		println("Robot started");
-		javaRun it.unibo.robot.pfrs.mbotConnTcp.initClientConn()
+		javaRun it.unibo.robot.mbotConnTcp.initClientConn()
 	]
 	switchTo listen
 	
@@ -313,11 +313,11 @@ QActor robot context ctxFinalSysAnalysis -pubsub {
 	finally repeatPlan
 		
 	Plan execMove resumeLastPlan [
-		onMsg moveRobot : moveRobot(h)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotStop();
-		onMsg moveRobot : moveRobot(w(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotForward(X);
-		onMsg moveRobot : moveRobot(s(X))	-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(X);
-		onMsg moveRobot : moveRobot(a)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotLeft();
-		onMsg moveRobot : moveRobot(d)		-> javaRun it.unibo.robot.pfrs.mbotConnTcp.mbotRight();
+		onMsg moveRobot : moveRobot(h)		-> javaRun it.unibo.robot.mbotConnTcp.mbotStop();
+		onMsg moveRobot : moveRobot(w(X))	-> javaRun it.unibo.robot.mbotConnTcp.mbotForward(X);
+		onMsg moveRobot : moveRobot(s(X))	-> javaRun it.unibo.robot.mbotConnTcp.mbotBackward(X);
+		onMsg moveRobot : moveRobot(a)		-> javaRun it.unibo.robot.mbotConnTcp.mbotLeft();
+		onMsg moveRobot : moveRobot(d)		-> javaRun it.unibo.robot.mbotConnTcp.mbotRight();
 		onMsg moveRobot : moveRobot(x(X))	-> forward webguiexecutor -m ctrlAppl : ctrlAppl(X)
 	]
 }
@@ -329,7 +329,7 @@ QActor lampadapter context ctxFinalSysAnalysis -pubsub {
 	
 	Plan init normal [
 		println("Lamp Adapter started");
-		javaRun it.unibo.frontend.hueClient.setQaCtx("lampEvent")
+		javaRun it.unibo.lampadapter.hueClient.setQaCtx("lampEvent")
 	]
 	switchTo listen
 	
@@ -340,9 +340,9 @@ QActor lampadapter context ctxFinalSysAnalysis -pubsub {
 	Plan ctrlLamp resumeLastPlan [
 		[!? enabled] {
 			onEvent ctrlEvent : ctrlEvent(hueLamp,off)
-				-> javaRun it.unibo.frontend.hueClient.sendPut("{'on':false}", "lights/2/state");
+				-> javaRun it.unibo.lampadapter.hueClient.sendPut("{'on':false}", "lights/2/state");
 			onEvent ctrlEvent : ctrlEvent(hueLamp,on)
-				-> javaRun it.unibo.frontend.hueClient.sendPut("{'on':true, 'bri':167}", "lights/2/state")
+				-> javaRun it.unibo.lampadapter.hueClient.sendPut("{'on':true, 'bri':167}", "lights/2/state")
 		}
 	]
 }

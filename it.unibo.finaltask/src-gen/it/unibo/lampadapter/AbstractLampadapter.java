@@ -77,7 +77,7 @@ public abstract class AbstractLampadapter extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"Lamp Adapter started\"";
 	    	println( temporaryStr );  
-	    	it.unibo.frontend.hueClient.setQaCtx( myself ,"lampEvent"  );
+	    	it.unibo.lampadapter.hueClient.setQaCtx( myself ,"lampEvent"  );
 	     connectToMqttServer("tcp://localhost:1883");
 	    	//switchTo listen
 	        switchToPlanAsNextState(pr, myselfName, "lampadapter_"+myselfName, 
@@ -121,7 +121,7 @@ public abstract class AbstractLampadapter extends QActor {
 	    			//end arg1
 	    			String arg2 = "lights/2/state" ;
 	    			//end arg2
-	    			it.unibo.frontend.hueClient.sendPut(this,arg1,arg2 );
+	    			it.unibo.lampadapter.hueClient.sendPut(this,arg1,arg2 );
 	    			}
 	    	}
 	    	//onEvent 
@@ -135,7 +135,7 @@ public abstract class AbstractLampadapter extends QActor {
 	    			//end arg1
 	    			String arg2 = "lights/2/state" ;
 	    			//end arg2
-	    			it.unibo.frontend.hueClient.sendPut(this,arg1,arg2 );
+	    			it.unibo.lampadapter.hueClient.sendPut(this,arg1,arg2 );
 	    			}
 	    	}
 	    	};//actionseq

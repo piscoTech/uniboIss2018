@@ -1,4 +1,4 @@
-package it.unibo.robot.pfrs;
+package it.unibo.robot;
 
 import java.io.BufferedReader;
 import java.io.IOException;

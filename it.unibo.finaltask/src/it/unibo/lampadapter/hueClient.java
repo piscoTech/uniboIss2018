@@ -1,4 +1,4 @@
-package it.unibo.frontend;
+package it.unibo.lampadapter;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
