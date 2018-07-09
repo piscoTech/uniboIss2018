@@ -56,6 +56,17 @@ Per ricevere informazioni su temperatura ambientale e ora corrente occorre reali
 \subsection{Lampada Hue}
 Per gestire la lampada che lampeggia occorre identificare un'entità che alterni ciclicamente tra due stati accendendo e spegnendo la lampada, cosa perfettamente adatta a un attore QActor, per non interferire con le normali operazioni della logica applicativa risulta conveniente modellare questo \textit{blinker} come un attore separato controllato dalla logica applicativa e a sua volta controlla la lampada direttamente.
 
+\subsection{Pulizia e ostacoli}
+Per guidare il robot nella pulizia della maggiore area possibile della stanza sarebbe possibile stabilire a priori un percorso che il robot segue in maniera indiscriminata, ma questo funziona solo se la morfologia della stanza è completamente nota, cosa non verificata in quanto, sebbene si conosca la forma della stanza, non si sa se e dove sono degli ostacoli.
+
+Per gestire questo problema può venire in aiuto l'intelligenza artificiale dividendo la stanza in tile e sfruttando un algoritmo di ricerca per raggiungere tutti quelli da pulire e quando sono finiti, l'\texttt{end-point} davanti al \texttt{sonar2}.
+
+L'algoritmo di ricerca porterà nativamente a evitare gli ostacoli e a rilevare se questi sono insuperabili impedendo di raggiungere l'\texttt{end-point} portando a uno stop anticipato alle operazioni di pulizia.
+
+La rilevazione degli ostacoli richiede un lavoro ulteriore, rilevando quando il robot non riesce a portare a termine una delle mosse pianificate per pulire, cioè quando il sonar che ha a bordo segnala qualcosa. Quando il robot si sta muovendo in avanti e rileva che ha un ostacolo vuol dire che non può raggiungere il tile davanti a lui, questo tile sarà quindi marcato come ostacolo, il robot dovrà tornare indietro per riallinearsi con i tile ``virtuali" quindi annullare tutte le mosse pianificate e fare un nuovo piano. 
+
+La rilevazione degli ostacoli porta automaticamente anche a realizzare una mappa della stanza man mano che il robot prova a pulire. L'algoritmo di ricerca che guida il robot dovrà anche aver cura di ignorare quelle parti della stanza che sono isolate da ostacoli e non pulirle perché irraggiungibili e andare comunque all'\texttt{end-point}.
+
 \section{Progetto}
 Per mantenere lo stato del sistema ci si può appoggiare al supporto nativo del Prolog da parte di QActor per modellare una base di conoscenza che tenga traccia di temperatura e ora corrente, se si sta facendo la pulizia e qualunque altra informazione utile come la soglia di temperatura e l'intervallo di tempo in cui si può lavorare.
 
@@ -75,5 +86,8 @@ Ci siamo concentrati sull'analisi dei requisiti e del problema a livello general
 
 \subsection{2° sprint -- 27/06-04/07/2018}
 Supporto delle stato del robot come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
+
+\subsection{3° sprint -- 04-11/07/2018}
+Pulizia di tutta la stanza e gestione degli ostacoli.
 
 \end{document}
