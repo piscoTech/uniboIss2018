@@ -249,14 +249,20 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		whenEvent sonarDetect -> registerObstacle
 		
 	Plan registerObstacle [
-		javaRun it.unibo.cleaner.cleanerTime.stopTime();
-		println("Frontal obstacle detected.");
-		demo nextIsObstacle;
-		println("Obstacle position registered, stepping back.");
-		[?? timeMoved(T)] 
+		// [!? eval(lt, 350, timeMoved(T))]
+		[!? eval(lt, 1000, timeMoved(T))]
+			javaRun it.unibo.cleaner.cleanerTime.stopTime();
+			println("Frontal obstacle detected.");
+			demo nextIsObstacle;
+			println("Obstacle position registered");
+		
+		[?? eval(gt, 0, timeMoved(T))] 
+			println("Stepping back.");
 			forward robot -m moveRobot : moveRobot(s(T));
 			
-		println("---------------------")
+		println("---------------------");
+		delay 1000
+		// delay 350
 	] 
 	switchTo abortPlannedMoves
 	

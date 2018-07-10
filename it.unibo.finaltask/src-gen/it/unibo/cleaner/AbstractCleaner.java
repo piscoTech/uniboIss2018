@@ -304,20 +304,29 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("registerObstacle",-1);
 	    	String myselfName = "registerObstacle";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?eval(lt,1000,timeMoved(T))" )) != null ){
 	    	it.unibo.cleaner.cleanerTime.stopTime( myself  );
+	    	}
 	    	temporaryStr = "\"Frontal obstacle detected.\"";
 	    	println( temporaryStr );  
 	    	parg = "nextIsObstacle";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = "\"Obstacle position registered, stepping back.\"";
+	    	temporaryStr = "\"Obstacle position registered\"";
 	    	println( temporaryStr );  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??timeMoved(T)" )) != null ){
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??eval(gt,0,timeMoved(T))" )) != null ){
+	    	temporaryStr = "\"Stepping back.\"";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(s(T))", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	}
 	    	temporaryStr = "\"---------------------\"";
 	    	println( temporaryStr );  
+	    	//delay  ( no more reactive within a plan)
+	    	aar = delayReactive(1000,"" , "");
+	    	if( aar.getInterrupted() ) curPlanInExec   = "registerObstacle";
+	    	if( ! aar.getGoon() ) return ;
 	    	//switchTo abortPlannedMoves
 	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
 	              "abortPlannedMoves",false, false, null); 
