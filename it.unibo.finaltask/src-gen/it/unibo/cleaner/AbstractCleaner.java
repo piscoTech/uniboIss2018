@@ -63,6 +63,8 @@ public abstract class AbstractCleaner extends QActor {
 	    	stateTab.put("waitStart",waitStart);
 	    	stateTab.put("cleanPortion",cleanPortion);
 	    	stateTab.put("doMove",doMove);
+	    	stateTab.put("registerObstacle",registerObstacle);
+	    	stateTab.put("abortPlannedMoves",abortPlannedMoves);
 	    	stateTab.put("stopClean",stopClean);
 	    }
 	    StateFun handleToutBuiltIn = () -> {	
@@ -273,9 +275,10 @@ public abstract class AbstractCleaner extends QActor {
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?move(A,_)" )) != null ){
+	    	it.unibo.cleaner.cleanerTime.startTime( myself  );
+	    	}
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(A)", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
-	    	}
 	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(true)", guardVars ).toString();
 	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(_,T)" )) != null ){
@@ -288,14 +291,67 @@ public abstract class AbstractCleaner extends QActor {
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
-	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean") }, 
-	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished" },
+	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean"), stateTab.get("registerObstacle") }, 
+	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","E","sonarDetect" },
 	          400, "doMove" );//msgTransition
 	    }catch(Exception e_doMove){  
 	    	 println( getName() + " plan=doMove WARNING:" + e_doMove.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//doMove
+	    
+	    StateFun registerObstacle = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("registerObstacle",-1);
+	    	String myselfName = "registerObstacle";  
+	    	it.unibo.cleaner.cleanerTime.stopTime( myself  );
+	    	temporaryStr = "\"Frontal obstacle detected.\"";
+	    	println( temporaryStr );  
+	    	parg = "nextIsObstacle";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	temporaryStr = "\"Obstacle position registered, stepping back.\"";
+	    	println( temporaryStr );  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??timeMoved(T)" )) != null ){
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(s(T))", guardVars ).toString();
+	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
+	    	}
+	    	temporaryStr = "\"---------------------\"";
+	    	println( temporaryStr );  
+	    	//switchTo abortPlannedMoves
+	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
+	              "abortPlannedMoves",false, false, null); 
+	    }catch(Exception e_registerObstacle){  
+	    	 println( getName() + " plan=registerObstacle WARNING:" + e_registerObstacle.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//registerObstacle
+	    
+	    StateFun abortPlannedMoves = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_abortPlannedMoves",0);
+	     pr.incNumIter(); 	
+	    	String myselfName = "abortPlannedMoves";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(A,pos(cell(X,Y),D))" )) != null ){
+	    	temporaryStr = "\"Cleaning planned moves in KB...\"";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	println( temporaryStr );  
+	    	}
+	    	else{ {//actionseq
+	    	temporaryStr = "doneCleaningKB";
+	    	addRule( temporaryStr );  
+	    	temporaryStr = "\"Cleaning planned moves in KB...\"";
+	    	println( temporaryStr );  
+	    	};//actionseq
+	    	}
+	    	//switchTo stopClean
+	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
+	              "stopClean",true, false, " ??doneCleaningKB"); 
+	    }catch(Exception e_abortPlannedMoves){  
+	    	 println( getName() + " plan=abortPlannedMoves WARNING:" + e_abortPlannedMoves.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//abortPlannedMoves
 	    
 	    StateFun stopClean = () -> {	
 	    try{	

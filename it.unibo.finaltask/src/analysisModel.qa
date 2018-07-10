@@ -3,13 +3,13 @@ System finalSys2018
 
 Event usercmd		: usercmd(CMD)					// From web gui
 Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
-Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
+Event sonarDetect	: sonarDetect(X)				// From (virtual) robot sonar
 
 Dispatch moveRobot	: moveRobot(X)
 Dispatch ctrlAppl	: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
-Dispatch ctrlMsg		: ctrlMsg(TARGET, PAYLOAD)
+Dispatch ctrlMsg	: ctrlMsg(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
 Event lampEvent		: lampEvent(VERB, INFO)			// Feedback for controlling the real lamp
 
@@ -233,6 +233,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		demo printStatus;
 		
 		[!? move(A, _)]
+			javaRun it.unibo.cleaner.cleanerTime.startTime();
 			forward robot -m moveRobot : moveRobot(A)
 		else
 			selfMsg moveFinished : moveFinished(true);
@@ -242,7 +243,31 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	] transition
 		whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
-		whenMsg moveFinished -> stopClean
+		whenMsg moveFinished -> stopClean,
+		whenEvent sonarDetect -> registerObstacle
+		
+	Plan registerObstacle [
+		javaRun it.unibo.cleaner.cleanerTime.stopTime();
+		println("Frontal obstacle detected.");
+		demo nextIsObstacle;
+		println("Obstacle position registered, stepping back.");
+		[?? timeMoved(T)] 
+			forward robot -m moveRobot : moveRobot(s(T));
+			
+		println("---------------------")
+	] 
+	switchTo abortPlannedMoves
+	
+	Plan abortPlannedMoves [
+		[?? move(A, pos(cell(X,Y),D))]
+			println("Cleaning planned moves in KB...")
+		else {
+			addRule doneCleaningKB;
+			println("Cleaning planned moves in KB...")
+		}
+	]
+	switchTo [?? doneCleaningKB] stopClean
+	finally repeatPlan
 		
 	Plan stopClean [
 		demo actualizeNext;

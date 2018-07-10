@@ -142,6 +142,19 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about webguiexecutor
 %------------------------------------------------- 
+tempThreshold( 25).
+timeInterval( 32400,39600).
+sonarThreshold( 5).
+model( thermometer,20).
+model( clock,36300).
+model( blinker,off).
+validConditions:-model( thermometer,T),model( clock,H),tempThreshold( Tmax),timeInterval( Hmin,Hmax),eval( le,T,Tmax),eval( ge,H,Hmin),eval( le,H,Hmax).
+inFrontOfSonar:-sonarThreshold( Dmax),curSonarDistance( D),eval( le,D,Dmax).
+changedModelAction( thermometer,_):-validConditions, ! .
+changedModelAction( thermometer,_):-sendMsg( webguiexecutor,ctrlAppl,ctrlAppl( halt)).
+changedModelAction( clock,_):-validConditions, ! .
+changedModelAction( clock,_):-sendMsg( webguiexecutor,ctrlAppl,ctrlAppl( halt)).
+changedModelAction( blinker,V):-sendMsg( blinker,ctrlMsg,ctrlMsg( blinker,V)).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

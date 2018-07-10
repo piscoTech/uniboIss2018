@@ -97,7 +97,7 @@ public abstract class AbstractRobot extends QActor {
 	     msgTransition( pr,myselfName,"robot_"+myselfName,false,
 	          new StateFun[]{stateTab.get("execMove") }, 
 	          new String[]{"true","M","moveRobot" },
-	          3600000, "handleToutBuiltIn" );//msgTransition
+	          36000000, "handleToutBuiltIn" );//msgTransition
 	    }catch(Exception e_listen){  
 	    	 println( getName() + " plan=listen WARNING:" + e_listen.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -108,12 +108,11 @@ public abstract class AbstractRobot extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("execMove",-1);
 	    	String myselfName = "execMove";  
-	    	printCurrentMessage(false);
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(h(X)))");
+	    	curT = Term.createTerm("moveRobot(h)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
 	    		it.unibo.robot.pfrs.mbotConnTcp.mbotStop(this );
@@ -121,29 +120,37 @@ public abstract class AbstractRobot extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(w(X)))");
+	    	curT = Term.createTerm("moveRobot(w(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this );
+	    		String arg1 = "X" ;
+	    		arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(w(X))"), 
+	    			                Term.createTerm(currentMessage.msgContent()),  arg1 );	                
+	    		//end arg1
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotForward(this,arg1 );
 	    		}
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(s(X)))");
+	    	curT = Term.createTerm("moveRobot(s(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
-	    		it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this );
+	    		String arg1 = "X" ;
+	    		arg1 =  updateVars( Term.createTerm("moveRobot(X)"), Term.createTerm("moveRobot(s(X))"), 
+	    			                Term.createTerm(currentMessage.msgContent()),  arg1 );	                
+	    		//end arg1
+	    		it.unibo.robot.pfrs.mbotConnTcp.mbotBackward(this,arg1 );
 	    		}
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(a(X)))");
+	    	curT = Term.createTerm("moveRobot(a)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
 	    		it.unibo.robot.pfrs.mbotConnTcp.mbotLeft(this );
@@ -151,9 +158,9 @@ public abstract class AbstractRobot extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(d(X)))");
+	    	curT = Term.createTerm("moveRobot(d)");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
 	    		{/* JavaLikeMove */ 
 	    		it.unibo.robot.pfrs.mbotConnTcp.mbotRight(this );
@@ -161,15 +168,15 @@ public abstract class AbstractRobot extends QActor {
 	    	}
 	    	//onMsg 
 	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("usercmd(robotgui(x(X)))");
+	    	curT = Term.createTerm("moveRobot(x(X))");
 	    	if( currentMessage != null && currentMessage.msgId().equals("moveRobot") && 
-	    		pengine.unify(curT, Term.createTerm("usercmd(CMD)")) && 
+	    		pengine.unify(curT, Term.createTerm("moveRobot(X)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentMessage.msgContent() ) )){ 
-	    		String parg="startAppl(go)";
+	    		String parg="ctrlAppl(X)";
 	    		/* SendDispatch */
-	    		parg = updateVars(Term.createTerm("usercmd(CMD)"),  Term.createTerm("usercmd(robotgui(x(X)))"), 
+	    		parg = updateVars(Term.createTerm("moveRobot(X)"),  Term.createTerm("moveRobot(x(X))"), 
 	    			    		  					Term.createTerm(currentMessage.msgContent()), parg);
-	    		if( parg != null ) sendMsg("startAppl","webguiexecutor", QActorContext.dispatch, parg ); 
+	    		if( parg != null ) sendMsg("ctrlAppl","webguiexecutor", QActorContext.dispatch, parg ); 
 	    	}
 	    	repeatPlanNoTransition(pr,myselfName,"robot_"+myselfName,false,true);
 	    }catch(Exception e_execMove){  

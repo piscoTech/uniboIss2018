@@ -33,6 +33,8 @@ registerNext(pos(cell(X,Y), D)) :- replaceRule(nextPos(pos(cell(Xo,Yo), Do)), ne
 % Update the current position with the next one, the upcoming cell data is removed
 actualizeNext :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D))),
 	replaceRule(curPos(pos(cell(Xo,Yo), Do)), curPos(pos(cell(X,Y), D))), visit(cell(X,Y)).
+% Deletes the next planned move if an obstacle is detected and saves the obstacle position in the KB
+nextIsObstacle :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D))), obstacle(cell(X,Y)).
 
 % Whether all non-obstacle cells have been cleaned, i.e. there is no non-cleaned and non-obstacle cells
 % -Set from QActor side when ignoring parts of the room due to obstacles
