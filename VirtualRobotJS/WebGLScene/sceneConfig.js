@@ -40,7 +40,7 @@ const config = {
        {
            name: "middle",
            centerPosition: { x: 0.5, y: 0.5},
-           size: { x: 0.1, y: 0.1}
+           size: { x: 0.3, y: 0.3}
        },
         {
         	name: "wallUp",

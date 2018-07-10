@@ -144,7 +144,7 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %------------------------------------------------- 
 defaultPosition( pos( cell( 0,0),n)).
 size( 5,5).
-tileSize( 1000).
+tileSize( 350).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

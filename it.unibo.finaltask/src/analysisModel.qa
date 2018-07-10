@@ -132,8 +132,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	Rules {
 		defaultPosition(pos(cell(0,0), n)).
 		size(5,5).
-		tileSize(1000).
-		// tileSize(350).
+//		tileSize(1000).
+		tileSize(350).
 	}
 	
 	Plan init normal [
@@ -176,6 +176,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	
 	Plan cleanKBMisc [
 		removeRule overrideCleanStatus;
+		removeRule ignoreSonar;
 		
 		println("Cleaning KB (4/4)...")
 	]
@@ -185,18 +186,6 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		demo loadStatus;
 		demo loadInitialPosition;
 		demo visitCurrent;
-
-//		demo obstacle(cell(0,1));
-//		demo obstacle(cell(1,1));
-//		demo obstacle(cell(2,1));
-//		demo obstacle(cell(3,1));
-//		demo obstacle(cell(4,1));
-
-//		demo obstacle(cell(0,2));
-//		demo obstacle(cell(1,2));
-//		demo obstacle(cell(2,2));
-//		demo obstacle(cell(2,3));
-//		demo obstacle(cell(2,4));
 		
 		println("Auto cleaner ready to start...")
 	]
@@ -230,54 +219,61 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		whenMsg startAutoClean -> doMove
 	
 	Plan doMove [
+		removeRule ignoreSonar;
 		demo actualizeNext;
 		demo printStatus;
 		
-		javaRun it.unibo.cleaner.cleanerTime.startTime();
+		javaRun it.unibo.cleaner.cleanerTimer.startTimer();
 		[!? move(A, _)]
 			forward robot -m moveRobot : moveRobot(A)
 		else
 			selfMsg moveFinished : moveFinished(true);
+		[!? executingRotation] addRule ignoreSonar;
 		[?? move(_, T)] demo registerNext(T);
 		
 		println("---------------------")
 	] transition
-		whenTime 1300 -> doMove,
-		// whenTime 400 -> doMove,
+//		whenTime 1300 -> doMove,
+		whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> stopClean,
 		whenEvent sonarDetect -> registerObstacle
 		
 	Plan registerObstacle [
-		// [!? eval(lt, 350, timeMoved(T))]
-		[!? eval(lt, 1000, timeMoved(T))]
-			javaRun it.unibo.cleaner.cleanerTime.stopTime();
-			println("Frontal obstacle detected.");
+		[?? ignoreSonar]
+			selfMsg moveFinished : moveFinished(waiting)
+		else {
+			javaRun it.unibo.cleaner.cleanerTimer.stopTimer();
+			println("Frontal obstacle detected, stepping back...");
 			demo nextIsObstacle;
-			println("Obstacle position registered");
-		
-		[?? eval(gt, 0, timeMoved(T))] 
-			println("Stepping back.");
-			forward robot -m moveRobot : moveRobot(s(T));
-			
-		println("---------------------");
-		delay 1000
-		// delay 350
+			demo printStatus;
+			[?? timeMoved(T)] forward robot -m moveRobot : moveRobot(s(T));
+				
+			println("---------------------")
+		}
 	] 
-	switchTo abortPlannedMoves
+	transition
+//		whenTime 1300 -> abortPlannedMoves,
+		whenTime 400 -> abortPlannedMoves,
+		whenMsg stopAutoClean -> cleanKBStatus,
+		whenMsg moveFinished -> waitMoveCompletion
+	
+	Plan waitMoveCompletion [] transition
+//		whenTime 1300 -> doMove,
+		whenTime 600 -> doMove,
+		whenMsg stopAutoClean -> cleanKBStatus
 	
 	Plan abortPlannedMoves [
 		[?? move(A, pos(cell(X,Y),D))]
 			println("Cleaning planned moves in KB...")
-		else {
-			addRule doneCleaningKB;
-			println("Cleaning planned moves in KB...")
-		}
+		else
+			addRule doneCleaningKB
 	]
 	switchTo [?? doneCleaningKB] stopClean
 	finally repeatPlan
 		
 	Plan stopClean [
+		removeRule ignoreSonar;
 		demo actualizeNext;
 		
 		[!? jobDone] {

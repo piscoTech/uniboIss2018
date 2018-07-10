@@ -64,6 +64,7 @@ public abstract class AbstractCleaner extends QActor {
 	    	stateTab.put("cleanPortion",cleanPortion);
 	    	stateTab.put("doMove",doMove);
 	    	stateTab.put("registerObstacle",registerObstacle);
+	    	stateTab.put("waitMoveCompletion",waitMoveCompletion);
 	    	stateTab.put("abortPlannedMoves",abortPlannedMoves);
 	    	stateTab.put("stopClean",stopClean);
 	    }
@@ -180,6 +181,8 @@ public abstract class AbstractCleaner extends QActor {
 	    	String myselfName = "cleanKBMisc";  
 	    	temporaryStr = "overrideCleanStatus";
 	    	removeRule( temporaryStr );  
+	    	temporaryStr = "ignoreSonar";
+	    	removeRule( temporaryStr );  
 	    	temporaryStr = "\"Cleaning KB (4/4)...\"";
 	    	println( temporaryStr );  
 	    	//switchTo waitStart
@@ -268,20 +271,27 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("doMove",-1);
 	    	String myselfName = "doMove";  
+	    	temporaryStr = "ignoreSonar";
+	    	removeRule( temporaryStr );  
 	    	parg = "actualizeNext";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	parg = "printStatus";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	it.unibo.cleaner.cleanerTime.startTime( myself  );
+	    	it.unibo.cleaner.cleanerTimer.startTimer( myself  );
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?move(A,_)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(A)", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
 	    	}
 	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(true)", guardVars ).toString();
 	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
-	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(_,T)" )) != null ){
+	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " !?executingRotation" )) != null ){
+	    	temporaryStr = "ignoreSonar";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	addRule( temporaryStr );  
+	    	}
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(_,T)" )) != null ){
 	    	parg = "registerNext(T)";
 	    	parg = QActorUtils.substituteVars(guardVars,parg);
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
@@ -293,7 +303,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean"), stateTab.get("registerObstacle") }, 
 	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","E","sonarDetect" },
-	          1300, "doMove" );//msgTransition
+	          400, "doMove" );//msgTransition
 	    }catch(Exception e_doMove){  
 	    	 println( getName() + " plan=doMove WARNING:" + e_doMove.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -304,37 +314,53 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("registerObstacle",-1);
 	    	String myselfName = "registerObstacle";  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?eval(lt,1000,timeMoved(T))" )) != null ){
-	    	it.unibo.cleaner.cleanerTime.stopTime( myself  );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??ignoreSonar" )) != null ){
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(waiting)", guardVars ).toString();
+	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	}
-	    	temporaryStr = "\"Frontal obstacle detected.\"";
+	    	else{ {//actionseq
+	    	it.unibo.cleaner.cleanerTimer.stopTimer( myself  );
+	    	temporaryStr = "\"Frontal obstacle detected, stepping back...\"";
 	    	println( temporaryStr );  
 	    	parg = "nextIsObstacle";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	temporaryStr = "\"Obstacle position registered\"";
-	    	println( temporaryStr );  
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??eval(gt,0,timeMoved(T))" )) != null ){
-	    	temporaryStr = "\"Stepping back.\"";
-	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
-	    	println( temporaryStr );  
-	    	}
+	    	parg = "printStatus";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??timeMoved(T)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(s(T))", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
+	    	}
 	    	temporaryStr = "\"---------------------\"";
 	    	println( temporaryStr );  
-	    	//delay  ( no more reactive within a plan)
-	    	aar = delayReactive(1000,"" , "");
-	    	if( aar.getInterrupted() ) curPlanInExec   = "registerObstacle";
-	    	if( ! aar.getGoon() ) return ;
-	    	//switchTo abortPlannedMoves
-	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
-	              "abortPlannedMoves",false, false, null); 
+	    	};//actionseq
+	    	}
+	    	//bbb
+	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
+	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("waitMoveCompletion") }, 
+	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished" },
+	          400, "abortPlannedMoves" );//msgTransition
 	    }catch(Exception e_registerObstacle){  
 	    	 println( getName() + " plan=registerObstacle WARNING:" + e_registerObstacle.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//registerObstacle
+	    
+	    StateFun waitMoveCompletion = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp("waitMoveCompletion",-1);
+	    	String myselfName = "waitMoveCompletion";  
+	    	//bbb
+	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
+	          new StateFun[]{stateTab.get("cleanKBStatus") }, 
+	          new String[]{"true","M","stopAutoClean" },
+	          600, "doMove" );//msgTransition
+	    }catch(Exception e_waitMoveCompletion){  
+	    	 println( getName() + " plan=waitMoveCompletion WARNING:" + e_waitMoveCompletion.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//waitMoveCompletion
 	    
 	    StateFun abortPlannedMoves = () -> {	
 	    try{	
@@ -346,12 +372,9 @@ public abstract class AbstractCleaner extends QActor {
 	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	println( temporaryStr );  
 	    	}
-	    	else{ {//actionseq
-	    	temporaryStr = "doneCleaningKB";
+	    	else{ temporaryStr = "doneCleaningKB";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
 	    	addRule( temporaryStr );  
-	    	temporaryStr = "\"Cleaning planned moves in KB...\"";
-	    	println( temporaryStr );  
-	    	};//actionseq
 	    	}
 	    	//switchTo stopClean
 	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
@@ -366,6 +389,8 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("stopClean",-1);
 	    	String myselfName = "stopClean";  
+	    	temporaryStr = "ignoreSonar";
+	    	removeRule( temporaryStr );  
 	    	parg = "actualizeNext";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
