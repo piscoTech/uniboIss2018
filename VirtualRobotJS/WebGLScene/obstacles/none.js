@@ -37,11 +37,11 @@ const config = {
 //        }
     ],
     staticObstacles: [
-       {
-           name: "middle",
-           centerPosition: { x: 0.5, y: 0.5},
-           size: { x: 0.1, y: 0.1}
-       },
+//        {
+//            name: "wall",
+//            centerPosition: { x: 0.5, y: 0.9},
+//            size: { x: 0.01, y: 0.01}
+//        },
         {
         	name: "wallUp",
         	centerPosition: { x: 0.58, y: 0.98},
