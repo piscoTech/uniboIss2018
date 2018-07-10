@@ -21,7 +21,6 @@ digraph finite_state_machine {
 	registerObstacle [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	abortPlannedMoves [ color = black ][ fontcolor = black ][ penwidth = 3 ]
 	
-	doMove -> doMove [ label = "timeout(400)" ][ color = green ][ fontcolor = green ]
 	cleanPortion -> doMove [ label = "startAutoClean" ][ color = black ][ fontcolor = black ]
 	cleanKBNextPositions -> cleanKBMisc [ label = "[ ?? doneCleaningKB ], switch" ][ color = black ][ fontcolor = black ]
 	cleanKBMisc -> waitStart [ label = "switch" ][ color = black ][ fontcolor = black ]
@@ -40,6 +39,7 @@ digraph finite_state_machine {
 	registerObstacle -> abortPlannedMoves [ label = "switch" ][ color = black ][ fontcolor = black ]
 	stopClean -> cleanKBStatus [ label = "stopAutoClean" ][ color = black ][ fontcolor = black ]
 	cleanPortion -> cleanPortion [ label = "retryAutoClean" ][ color = black ][ fontcolor = black ]
+	doMove -> doMove [ label = "timeout(1300)" ][ color = green ][ fontcolor = green ]
 	doMove -> stopClean [ label = "moveFinished" ][ color = black ][ fontcolor = black ]
 	waitStart -> handleToutBuiltIn [ label = "timeout(36000000)" ][ color = green ][ fontcolor = green ]
 	cleanKBStatus -> cleanKBStatus [ label = "repeat "][ style = dashed ][ color = blue ][ fontcolor = blue ]

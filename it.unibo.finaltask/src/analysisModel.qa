@@ -132,7 +132,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	Rules {
 		defaultPosition(pos(cell(0,0), n)).
 		size(5,5).
-		tileSize(350).
+		tileSize(1000).
+		// tileSize(350).
 	}
 	
 	Plan init normal [
@@ -232,8 +233,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		demo actualizeNext;
 		demo printStatus;
 		
+		javaRun it.unibo.cleaner.cleanerTime.startTime();
 		[!? move(A, _)]
-			javaRun it.unibo.cleaner.cleanerTime.startTime();
 			forward robot -m moveRobot : moveRobot(A)
 		else
 			selfMsg moveFinished : moveFinished(true);
@@ -241,7 +242,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		
 		println("---------------------")
 	] transition
-		whenTime 400 -> doMove,
+		whenTime 1300 -> doMove,
+		// whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> stopClean,
 		whenEvent sonarDetect -> registerObstacle

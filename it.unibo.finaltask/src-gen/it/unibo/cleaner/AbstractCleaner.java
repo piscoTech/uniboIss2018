@@ -274,11 +274,11 @@ public abstract class AbstractCleaner extends QActor {
 	    	parg = "printStatus";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?move(A,_)" )) != null ){
 	    	it.unibo.cleaner.cleanerTime.startTime( myself  );
-	    	}
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?move(A,_)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveRobot(X)","moveRobot(A)", guardVars ).toString();
 	    	sendMsg("moveRobot","robot", QActorContext.dispatch, temporaryStr ); 
+	    	}
 	    	else{ temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(true)", guardVars ).toString();
 	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(_,T)" )) != null ){
@@ -293,7 +293,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean"), stateTab.get("registerObstacle") }, 
 	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","E","sonarDetect" },
-	          400, "doMove" );//msgTransition
+	          1300, "doMove" );//msgTransition
 	    }catch(Exception e_doMove){  
 	    	 println( getName() + " plan=doMove WARNING:" + e_doMove.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
