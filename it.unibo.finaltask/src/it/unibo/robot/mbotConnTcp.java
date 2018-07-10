@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import org.json.JSONObject;
 
+import it.unibo.qactors.QActorContext;
 import it.unibo.qactors.akka.QActor;
 
 public class mbotConnTcp {
@@ -59,11 +60,14 @@ public class mbotConnTcp {
 						case "collision":
 							jsonArg = jsonObject.getJSONObject("arg");
 							String objectName = jsonArg.getString("objectName");
-							qa.emit("sonarDetect",
-									"sonarDetect(TARGET)".replace("TARGET", objectName.replace("-", "")));
+							// qa.emit("sonarDetect", "sonarDetect(TARGET)".replace("TARGET",
+							// objectName.replace("-", "")));
+							// Directly send a dispath to the cleaner, the only one interested in a collision detection
+							qa.sendMsg("obstacleFound", "cleaner", QActorContext.dispatch,
+									"obstacleFound(TARGET)".replace("TARGET", objectName.replace("-", "")));
 							break;
 						}
-					} catch (IOException e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				}

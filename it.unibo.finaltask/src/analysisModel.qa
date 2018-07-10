@@ -3,13 +3,13 @@ System finalSys2018
 
 Event usercmd		: usercmd(CMD)					// From web gui
 Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
-Event sonarDetect	: sonarDetect(X)				// From (virtual) robot sonar
+// For on-board sonar see 'obstacleFound'
 
 Dispatch moveRobot	: moveRobot(X)
 Dispatch ctrlAppl	: ctrlAppl(X)					// X = go | halt
 
 Event ctrlEvent		: ctrlEvent(TARGET, PAYLOAD)
-Dispatch ctrlMsg	: ctrlMsg(TARGET, PAYLOAD)
+Dispatch ctrlMsg		: ctrlMsg(TARGET, PAYLOAD)
 Event sensorEvent	: sensorEvent(ORIGIN, PAYLOAD)
 Event lampEvent		: lampEvent(VERB, INFO)			// Feedback for controlling the real lamp
 
@@ -18,6 +18,7 @@ Dispatch moveFinished 	: moveFinished(X)
 Dispatch startAutoClean	: startAutoClean(X)
 Dispatch stopAutoClean	: stopAutoClean(X)
 Dispatch retryAutoClean	: retryAutoClean(X)
+Dispatch obstacleFound	: obstacleFound(X) // From (virtual) robot sonar
 
 pubSubServer "tcp://localhost:1883"
 
@@ -219,7 +220,6 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		whenMsg startAutoClean -> doMove
 	
 	Plan doMove [
-		onEvent sonarDetect : sonarDetect(X) -> javaRun it.unibo.utils.misc.noop();
 		removeRule ignoreSonar;
 		demo actualizeNext;
 		demo printStatus;
@@ -238,11 +238,9 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> stopClean,
-		whenEvent sonarDetect -> registerObstacle
+		whenMsg obstacleFound -> registerObstacle
 		
 	Plan registerObstacle [
-		onEvent sonarDetect : sonarDetect(X) -> javaRun it.unibo.utils.misc.noop();
-		
 		[?? ignoreSonar]
 			selfMsg moveFinished : moveFinished(waiting)
 		else {
@@ -257,16 +255,13 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	] 
 	transition
 //		whenTime 1300 -> abortPlannedMoves,
-		whenTime 1000 -> abortPlannedMoves,
+		whenTime 400 -> abortPlannedMoves,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> waitMoveCompletion
 	
-	Plan waitMoveCompletion [
-		onEvent sonarDetect : sonarDetect(X) -> javaRun it.unibo.utils.misc.noop()
-	]
-	transition
+	Plan waitMoveCompletion [] transition
 //		whenTime 1300 -> doMove,
-		whenTime 1000 -> doMove,
+		whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus
 	
 	Plan abortPlannedMoves [

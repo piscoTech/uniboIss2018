@@ -3,9 +3,7 @@ const config = {
         size: { x: 25, y: 25 }
     },
     player: {
-        //position: { x: 0.5, y: 0.5 },		//CENTER
-        position: { x: 0.15, y: 0.2 },		//INIT
-        //position: { x: 0.8, y: 0.85 },		//END
+        position: { x: 0.14, y: 0.2 },
         speed: 0.2
     },
     sonars: [
@@ -40,7 +38,7 @@ const config = {
        {
            name: "middle",
            centerPosition: { x: 0.5, y: 0.5},
-           size: { x: 0.3, y: 0.3}
+           size: { x: 0.4, y: 0.4}
        },
         {
         	name: "wallUp",

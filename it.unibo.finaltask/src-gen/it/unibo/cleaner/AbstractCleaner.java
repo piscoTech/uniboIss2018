@@ -271,16 +271,6 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("doMove",-1);
 	    	String myselfName = "doMove";  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonarDetect(X)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarDetect") && 
-	    		pengine.unify(curT, Term.createTerm("sonarDetect(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.utils.misc.noop(this );
-	    			}
-	    	}
 	    	temporaryStr = "ignoreSonar";
 	    	removeRule( temporaryStr );  
 	    	parg = "actualizeNext";
@@ -312,7 +302,7 @@ public abstract class AbstractCleaner extends QActor {
 	    	//bbb
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean"), stateTab.get("registerObstacle") }, 
-	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","E","sonarDetect" },
+	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","M","obstacleFound" },
 	          400, "doMove" );//msgTransition
 	    }catch(Exception e_doMove){  
 	    	 println( getName() + " plan=doMove WARNING:" + e_doMove.getMessage() );
@@ -324,16 +314,6 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("registerObstacle",-1);
 	    	String myselfName = "registerObstacle";  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonarDetect(X)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarDetect") && 
-	    		pengine.unify(curT, Term.createTerm("sonarDetect(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.utils.misc.noop(this );
-	    			}
-	    	}
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??ignoreSonar" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(waiting)", guardVars ).toString();
 	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
@@ -360,7 +340,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("waitMoveCompletion") }, 
 	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished" },
-	          1000, "abortPlannedMoves" );//msgTransition
+	          400, "abortPlannedMoves" );//msgTransition
 	    }catch(Exception e_registerObstacle){  
 	    	 println( getName() + " plan=registerObstacle WARNING:" + e_registerObstacle.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -371,21 +351,11 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("waitMoveCompletion",-1);
 	    	String myselfName = "waitMoveCompletion";  
-	    	//onEvent 
-	    	setCurrentMsgFromStore(); 
-	    	curT = Term.createTerm("sonarDetect(X)");
-	    	if( currentEvent != null && currentEvent.getEventId().equals("sonarDetect") && 
-	    		pengine.unify(curT, Term.createTerm("sonarDetect(X)")) && 
-	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
-	    			{/* JavaLikeMove */ 
-	    			it.unibo.utils.misc.noop(this );
-	    			}
-	    	}
 	    	//bbb
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus") }, 
 	          new String[]{"true","M","stopAutoClean" },
-	          1000, "doMove" );//msgTransition
+	          400, "doMove" );//msgTransition
 	    }catch(Exception e_waitMoveCompletion){  
 	    	 println( getName() + " plan=waitMoveCompletion WARNING:" + e_waitMoveCompletion.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
