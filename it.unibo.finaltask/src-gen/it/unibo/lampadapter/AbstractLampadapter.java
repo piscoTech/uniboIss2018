@@ -77,7 +77,9 @@ public abstract class AbstractLampadapter extends QActor {
 	    	String myselfName = "init";  
 	    	temporaryStr = "\"Lamp Adapter started\"";
 	    	println( temporaryStr );  
-	    	it.unibo.lampadapter.hueClient.setQaCtx( myself ,"lampEvent"  );
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?configHue(IP,L)" )) != null ){
+	    	it.unibo.lampadapter.hueClient.setQaCtx( myself ,"lampEvent", guardVars.get("IP"), guardVars.get("L")  );
+	    	}
 	     connectToMqttServer("tcp://localhost:1883");
 	    	//switchTo listen
 	        switchToPlanAsNextState(pr, myselfName, "lampadapter_"+myselfName, 
@@ -117,11 +119,7 @@ public abstract class AbstractLampadapter extends QActor {
 	    		pengine.unify(curT, Term.createTerm("ctrlEvent(TARGET,PAYLOAD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
-	    			String arg1 = "{'on':false}" ;
-	    			//end arg1
-	    			String arg2 = "lights/2/state" ;
-	    			//end arg2
-	    			it.unibo.lampadapter.hueClient.sendPut(this,arg1,arg2 );
+	    			it.unibo.lampadapter.hueClient.setOff(this );
 	    			}
 	    	}
 	    	//onEvent 
@@ -131,11 +129,7 @@ public abstract class AbstractLampadapter extends QActor {
 	    		pengine.unify(curT, Term.createTerm("ctrlEvent(TARGET,PAYLOAD)")) && 
 	    		pengine.unify(curT, Term.createTerm( currentEvent.getMsg() ) )){ 
 	    			{/* JavaLikeMove */ 
-	    			String arg1 = "{'on':true, 'bri':167}" ;
-	    			//end arg1
-	    			String arg2 = "lights/2/state" ;
-	    			//end arg2
-	    			it.unibo.lampadapter.hueClient.sendPut(this,arg1,arg2 );
+	    			it.unibo.lampadapter.hueClient.setOn(this );
 	    			}
 	    	}
 	    	};//actionseq

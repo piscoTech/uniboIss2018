@@ -17,13 +17,24 @@ import it.unibo.qactors.akka.QActor;
 public class hueClient {
 	private static QActorContext ctx = null;
 	private static String evId = null;
-	private static String hueBridgeAddr = "192.168.1.2";
+	private static String hueBridgeAddr = "192.168.1.85";
+	private static String lampId = "3";
 	private static String hueCmdPrefix = "http://" + hueBridgeAddr + "/api/2GgKjwy9JAlW57Dl7qJ1ZRgEpWvjZi6ghN6hesAC/";
 	private static CloseableHttpClient httpclient = null;
 
-	public static void setQaCtx(QActor qa, String curevId) {
+	public static void setQaCtx(QActor qa, String curevId, String ip, String lId) {
 		ctx = qa.getQActorContext();
 		evId = curevId;
+		hueBridgeAddr = ip.replaceAll("[\"']+", "");
+		lampId = lId.replaceAll("[\"']+", "");
+	}
+
+	public static void setOff(QActor qa) {
+		sendPut(qa, "{'on':false}", "lights/" + lampId + "/state");
+	}
+
+	public static void setOn(QActor qa) {
+		sendPut(qa, "{'on':true, 'bri':167}", "lights/" + lampId + "/state");
 	}
 
 	public static void sendPut(QActor qa, String data, String url) {
@@ -32,7 +43,7 @@ public class hueClient {
 			data = data.replace("'", "\"");
 			url = hueCmdPrefix + url.replace("'", "\"");
 			if (httpclient == null)
-				HttpClients.createDefault();
+				httpclient = HttpClients.createDefault();
 			HttpPut request = new HttpPut(url);
 			StringEntity params = new StringEntity(data, "UTF-8");
 			params.setContentType("application/json");
@@ -43,7 +54,6 @@ public class hueClient {
 			request.setEntity(params);
 			CloseableHttpResponse response = httpclient.execute(request);
 			getAnswerFromServer(response, "put");
-
 		} catch (Exception e) {
 			System.out.println("ERROR " + e.getMessage());
 		}
@@ -88,17 +98,16 @@ public class hueClient {
 	/*
 	 * Just to test
 	 */
-	public static void main(String args[]) throws InterruptedException {
-		sendGet(null, "lights/2");
-		for (int i = 1; i <= 3; i++) {
-			String cmd = "{'on':false}";
-			sendPut(null, cmd, "lights/2/state");
-			Thread.sleep(1000);
-			cmd = "{'on':true, \"bri\":167}";
-			sendPut(null, cmd, "lights/2/state");
-			Thread.sleep(1000);
-		}
-	}
+	// public static void main(String args[]) throws InterruptedException {
+	// sendGet(null, "lights/" + lampId);
+	// for (int i = 1; i <= 10; i++) {
+	// setOff(null);
+	// Thread.sleep(3000);
+	// setOn(null);
+	// Thread.sleep(3000);
+	// }
+	// setOff(null);
+	// }
 }
 /*
  * http://www.mio-ip.it/

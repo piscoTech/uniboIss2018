@@ -142,6 +142,8 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %-------------------------------------------------
 %  User static rules about lampadapter
 %------------------------------------------------- 
+enabled.
+configHue( "192.168.1.85",3).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),
