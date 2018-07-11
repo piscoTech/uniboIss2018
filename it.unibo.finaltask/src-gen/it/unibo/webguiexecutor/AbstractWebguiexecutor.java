@@ -61,7 +61,7 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	stateTab.put("checkInitialPosition",checkInitialPosition);
 	    	stateTab.put("checkInitialSonarDistance",checkInitialSonarDistance);
 	    	stateTab.put("startCleaning",startCleaning);
-	    	stateTab.put("clean",clean);
+	    	stateTab.put("cleaning",cleaning);
 	    	stateTab.put("checkStop",checkStop);
 	    	stateTab.put("cleanStop",cleanStop);
 	    	stateTab.put("handleSensor",handleSensor);
@@ -200,30 +200,30 @@ public abstract class AbstractWebguiexecutor extends QActor {
 	    	solveGoal( parg ); //sept2017
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"startAutoClean(X)","startAutoClean(true)", guardVars ).toString();
 	    	sendMsg("startAutoClean","cleaner", QActorContext.dispatch, temporaryStr ); 
-	    	//switchTo clean
+	    	//switchTo cleaning
 	        switchToPlanAsNextState(pr, myselfName, "webguiexecutor_"+myselfName, 
-	              "clean",false, false, null); 
+	              "cleaning",false, false, null); 
 	    }catch(Exception e_startCleaning){  
 	    	 println( getName() + " plan=startCleaning WARNING:" + e_startCleaning.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//startCleaning
 	    
-	    StateFun clean = () -> {	
+	    StateFun cleaning = () -> {	
 	    try{	
-	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_clean",0);
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_cleaning",0);
 	     pr.incNumIter(); 	
-	    	String myselfName = "clean";  
+	    	String myselfName = "cleaning";  
 	    	//bbb
 	     msgTransition( pr,myselfName,"webguiexecutor_"+myselfName,false,
 	          new StateFun[]{stateTab.get("handleSensor"), stateTab.get("checkStop"), stateTab.get("cleanStop") }, 
 	          new String[]{"true","E","sensorEvent", "true","M","ctrlAppl", "true","M","stopAutoClean" },
 	          36000000, "handleToutBuiltIn" );//msgTransition
-	    }catch(Exception e_clean){  
-	    	 println( getName() + " plan=clean WARNING:" + e_clean.getMessage() );
+	    }catch(Exception e_cleaning){  
+	    	 println( getName() + " plan=cleaning WARNING:" + e_cleaning.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
-	    };//clean
+	    };//cleaning
 	    
 	    StateFun checkStop = () -> {	
 	    try{	

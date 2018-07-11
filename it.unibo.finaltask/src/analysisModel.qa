@@ -99,9 +99,9 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 		demo changeModelItem(blinker, on);
 		forward cleaner -m startAutoClean : startAutoClean(true)
 	]
-	switchTo clean
+	switchTo cleaning
 	
-	Plan clean [] transition stopAfter 36000000
+	Plan cleaning [] transition stopAfter 36000000
 		whenEvent sensorEvent -> handleSensor,
 		whenMsg ctrlAppl -> checkStop,
 		whenMsg stopAutoClean -> cleanStop // Clean signaled completion of operations
@@ -131,9 +131,9 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 QActor cleaner context ctxFinalSysAnalysis {
 	Rules {
 		defaultPosition(pos(cell(0,0), n)).
-		size(5,5).
+		size(8,8).
 //		tileSize(1000).
-		tileSize(350).
+		tileSize(200).
 	}
 	
 	Plan init normal [
@@ -143,7 +143,7 @@ QActor cleaner context ctxFinalSysAnalysis {
 	
 	Plan cleanKBStatus [
 		[?? status(cell(X,Y), S)]
-			actorOp noOp
+			javaRun it.unibo.utils.misc.noOp()
 		else {
 			addRule doneCleaningKB;
 			println("Cleaned KB (1/4)")
@@ -154,7 +154,7 @@ QActor cleaner context ctxFinalSysAnalysis {
 	
 	Plan cleanKBMoves [
 		[?? move(A, pos(cell(X,Y),D))]
-			actorOp noOp
+			javaRun it.unibo.utils.misc.noOp()
 		else {
 			addRule doneCleaningKB;
 			println("Cleaned KB (2/4)")
@@ -165,7 +165,7 @@ QActor cleaner context ctxFinalSysAnalysis {
 	
 	Plan cleanKBNextPositions [
 		[?? nextPos(pos(cell(X,Y), D))]
-			actorOp noOp
+			javaRun it.unibo.utils.misc.noOp()
 		else {
 			addRule doneCleaningKB;
 			println("Cleaned KB (3/4)")
@@ -235,7 +235,7 @@ QActor cleaner context ctxFinalSysAnalysis {
 		println("---------------------")
 	] transition
 //		whenTime 1300 -> doMove,
-		whenTime 400 -> doMove,
+		whenTime 201 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> stopClean,
 		whenEvent sonarDetect -> registerObstacle
@@ -255,18 +255,18 @@ QActor cleaner context ctxFinalSysAnalysis {
 	] 
 	transition
 //		whenTime 1300 -> abortPlannedMoves,
-		whenTime 400 -> abortPlannedMoves,
+		whenTime 201 -> abortPlannedMoves,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> waitMoveCompletion
 	
 	Plan waitMoveCompletion [] transition
 //		whenTime 1300 -> doMove,
-		whenTime 400 -> doMove,
+		whenTime 201 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus
 	
 	Plan abortPlannedMoves [
 		[?? move(A, pos(cell(X,Y),D))]
-			actorOp noOp
+			javaRun it.unibo.utils.misc.noOp()
 		else {
 			addRule doneCleaningKB;
 			println("Cleaned planned moves")

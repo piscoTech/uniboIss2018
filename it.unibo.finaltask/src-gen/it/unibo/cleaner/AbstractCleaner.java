@@ -102,9 +102,7 @@ public abstract class AbstractCleaner extends QActor {
 	     pr.incNumIter(); 	
 	    	String myselfName = "cleanKBStatus";  
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??status(cell(X,Y),S)" )) != null ){
-	    	parg = "noOp"; 
-	    	parg = QActorUtils.substituteVars(guardVars,parg);
-	    	actorOpExecute(parg, false);	//OCT17		 
+	    	it.unibo.utils.misc.noOp( myself  );
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = "doneCleaningKB";
@@ -128,9 +126,7 @@ public abstract class AbstractCleaner extends QActor {
 	     pr.incNumIter(); 	
 	    	String myselfName = "cleanKBMoves";  
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(A,pos(cell(X,Y),D))" )) != null ){
-	    	parg = "noOp"; 
-	    	parg = QActorUtils.substituteVars(guardVars,parg);
-	    	actorOpExecute(parg, false);	//OCT17		 
+	    	it.unibo.utils.misc.noOp( myself  );
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = "doneCleaningKB";
@@ -154,9 +150,7 @@ public abstract class AbstractCleaner extends QActor {
 	     pr.incNumIter(); 	
 	    	String myselfName = "cleanKBNextPositions";  
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??nextPos(pos(cell(X,Y),D))" )) != null ){
-	    	parg = "noOp"; 
-	    	parg = QActorUtils.substituteVars(guardVars,parg);
-	    	actorOpExecute(parg, false);	//OCT17		 
+	    	it.unibo.utils.misc.noOp( myself  );
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = "doneCleaningKB";
@@ -302,7 +296,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("stopClean"), stateTab.get("registerObstacle") }, 
 	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished", "true","E","sonarDetect" },
-	          400, "doMove" );//msgTransition
+	          201, "doMove" );//msgTransition
 	    }catch(Exception e_doMove){  
 	    	 println( getName() + " plan=doMove WARNING:" + e_doMove.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -339,7 +333,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("waitMoveCompletion") }, 
 	          new String[]{"true","M","stopAutoClean", "true","M","moveFinished" },
-	          400, "abortPlannedMoves" );//msgTransition
+	          201, "abortPlannedMoves" );//msgTransition
 	    }catch(Exception e_registerObstacle){  
 	    	 println( getName() + " plan=registerObstacle WARNING:" + e_registerObstacle.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -354,7 +348,7 @@ public abstract class AbstractCleaner extends QActor {
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("cleanKBStatus") }, 
 	          new String[]{"true","M","stopAutoClean" },
-	          400, "doMove" );//msgTransition
+	          201, "doMove" );//msgTransition
 	    }catch(Exception e_waitMoveCompletion){  
 	    	 println( getName() + " plan=waitMoveCompletion WARNING:" + e_waitMoveCompletion.getMessage() );
 	    	 QActorContext.terminateQActorSystem(this); 
@@ -367,9 +361,7 @@ public abstract class AbstractCleaner extends QActor {
 	     pr.incNumIter(); 	
 	    	String myselfName = "abortPlannedMoves";  
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " ??move(A,pos(cell(X,Y),D))" )) != null ){
-	    	parg = "noOp"; 
-	    	parg = QActorUtils.substituteVars(guardVars,parg);
-	    	actorOpExecute(parg, false);	//OCT17		 
+	    	it.unibo.utils.misc.noOp( myself  );
 	    	}
 	    	else{ {//actionseq
 	    	temporaryStr = "doneCleaningKB";

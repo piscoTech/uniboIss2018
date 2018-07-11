@@ -22,12 +22,12 @@ const config = {
 	staticObstacles: [
 	{
 		name: "middle1",
-		centerPosition: { x: 0.37, y: 0.65},
-		size: { x: 0.7, y: 0.01}
+		centerPosition: { x: 0.35, y: 0.58},
+		size: { x: 0.67, y: 0.01}
 	},
 	{
 		name: "middle2",
-		centerPosition: { x: 0.63, y: 0.35},
+		centerPosition: { x: 0.63, y: 0.3},
 		size: { x: 0.7, y: 0.01}
 	},
 	{

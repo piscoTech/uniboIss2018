@@ -37,7 +37,7 @@ const config = {
     staticObstacles: [
        {
            name: "middle",
-           centerPosition: { x: 0.5, y: 0.5},
+           centerPosition: { x: 0.48, y: 0.46},
            size: { x: 0.1, y: 0.1}
        },
         {

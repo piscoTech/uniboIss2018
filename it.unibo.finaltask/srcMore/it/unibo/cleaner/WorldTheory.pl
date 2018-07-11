@@ -143,8 +143,8 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 %  User static rules about cleaner
 %------------------------------------------------- 
 defaultPosition( pos( cell( 0,0),n)).
-size( 5,5).
-tileSize( 350).
+size( 8,8).
+tileSize( 200).
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),
