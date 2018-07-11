@@ -356,7 +356,7 @@ QActor robot context ctxFinalSysAnalysis {
 
 QActor lampadapter context ctxFinalSysAnalysis -pubsub {
 	Rules {
-		enabled.
+//		enabled.
 		configHue("192.168.1.85", 3).
 	}
 	

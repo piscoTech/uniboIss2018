@@ -14,6 +14,8 @@ public class cleanerTimer {
 		long stopTime = System.nanoTime();
 		// Conversion from nano to millis as that is what the robot needs
 		long timeMoved = (stopTime - startTime) / 1000000;
+		// Correction for virtual robot
+		timeMoved -= 16;
 		
 		if (timeMoved > 0)
 			qa.addRule("timeMoved(" + Long.toString(timeMoved) + ")");
