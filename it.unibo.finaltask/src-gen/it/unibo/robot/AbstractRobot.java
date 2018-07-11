@@ -78,7 +78,6 @@ public abstract class AbstractRobot extends QActor {
 	    	temporaryStr = "\"Robot started\"";
 	    	println( temporaryStr );  
 	    	it.unibo.robot.mbotConnTcp.initClientConn( myself  );
-	     connectToMqttServer("tcp://localhost:1883");
 	    	//switchTo listen
 	        switchToPlanAsNextState(pr, myselfName, "robot_"+myselfName, 
 	              "listen",false, false, null); 

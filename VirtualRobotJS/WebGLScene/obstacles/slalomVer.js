@@ -22,13 +22,13 @@ const config = {
 	staticObstacles: [
 	{
 		name: "middle1",
-		centerPosition: { x: 0.25, y: 0.5},
-		size: { x: 0.48, y: 0.01}
+		centerPosition: { x: 0.65, y: 0.37},
+		size: { x: 0.01, y: 0.7}
 	},
 	{
 		name: "middle2",
-		centerPosition: { x: 0.5, y: 0.75},
-		size: { x: 0.01, y: 0.48}
+		centerPosition: { x: 0.35, y: 0.63},
+		size: { x: 0.01, y: 0.7}
 	},
 	{
 		name: "wallUp",

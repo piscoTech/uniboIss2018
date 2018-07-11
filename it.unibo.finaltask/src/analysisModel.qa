@@ -3,7 +3,7 @@ System finalSys2018
 
 Event usercmd		: usercmd(CMD)					// From web gui
 Event sonar			: sonar(SONAR, X, DISTANCE)		// From (virtual) sonar
-// For on-board sonar see 'obstacleFound'
+Event sonarDetect	: sonarDetect(X)					// From (virtual) robot sonar
 
 Dispatch moveRobot	: moveRobot(X)
 Dispatch ctrlAppl	: ctrlAppl(X)					// X = go | halt
@@ -18,7 +18,6 @@ Dispatch moveFinished 	: moveFinished(X)
 Dispatch startAutoClean	: startAutoClean(X)
 Dispatch stopAutoClean	: stopAutoClean(X)
 Dispatch retryAutoClean	: retryAutoClean(X)
-Dispatch obstacleFound	: obstacleFound(X) // From (virtual) robot sonar
 
 pubSubServer "tcp://localhost:1883"
 
@@ -129,7 +128,7 @@ QActor webguiexecutor context ctxFinalSysAnalysis -pubsub {
 	switchTo [not !? validConditions] cleanStop
 }
 
-QActor cleaner context ctxFinalSysAnalysis -pubsub {
+QActor cleaner context ctxFinalSysAnalysis {
 	Rules {
 		defaultPosition(pos(cell(0,0), n)).
 		size(5,5).
@@ -144,10 +143,10 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	
 	Plan cleanKBStatus [
 		[?? status(cell(X,Y), S)]
-			println("Cleaning KB (1/4)...")
+			actorOp noOp
 		else {
 			addRule doneCleaningKB;
-			println("Cleaning KB (1/4)...")
+			println("Cleaned KB (1/4)")
 		}
 	]
 	switchTo [?? doneCleaningKB] cleanKBMoves
@@ -155,10 +154,10 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	
 	Plan cleanKBMoves [
 		[?? move(A, pos(cell(X,Y),D))]
-			println("Cleaning KB (2/4)...")
+			actorOp noOp
 		else {
 			addRule doneCleaningKB;
-			println("Cleaning KB (2/4)...")
+			println("Cleaned KB (2/4)")
 		}
 	]
 	switchTo [?? doneCleaningKB] cleanKBNextPositions
@@ -166,10 +165,10 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	
 	Plan cleanKBNextPositions [
 		[?? nextPos(pos(cell(X,Y), D))]
-			println("Cleaning KB (3/4)...")
+			actorOp noOp
 		else {
 			addRule doneCleaningKB;
-			println("Cleaning KB (3/4)...")
+			println("Cleaned KB (3/4)")
 		}
 	]
 	switchTo [?? doneCleaningKB] cleanKBMisc
@@ -179,7 +178,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		removeRule overrideCleanStatus;
 		removeRule ignoreSonar;
 		
-		println("Cleaning KB (4/4)...")
+		println("Cleaned KB (4/4)")
 	]
 	switchTo waitStart
 	
@@ -214,7 +213,8 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		[!? move(_, _)] selfMsg startAutoClean : startAutoClean(true);
 		println("---------------------")
 	]
-	transition stopAfter 36000000
+	transition
+		whenTime 1 -> stopClean, // Triggered when findMove is successful but no move are planned, i.e. already on the goal cell
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg retryAutoClean -> cleanPortion,
 		whenMsg startAutoClean -> doMove
@@ -238,7 +238,7 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 		whenTime 400 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg moveFinished -> stopClean,
-		whenMsg obstacleFound -> registerObstacle
+		whenEvent sonarDetect -> registerObstacle
 		
 	Plan registerObstacle [
 		[?? ignoreSonar]
@@ -266,9 +266,11 @@ QActor cleaner context ctxFinalSysAnalysis -pubsub {
 	
 	Plan abortPlannedMoves [
 		[?? move(A, pos(cell(X,Y),D))]
-			println("Cleaning planned moves in KB...")
-		else
-			addRule doneCleaningKB
+			actorOp noOp
+		else {
+			addRule doneCleaningKB;
+			println("Cleaned planned moves")
+		}
 	]
 	switchTo [?? doneCleaningKB] stopClean
 	finally repeatPlan
@@ -331,7 +333,7 @@ QActor blinker context ctxFinalSysAnalysis -pubsub {
 	switchTo listen
 }
 
-QActor robot context ctxFinalSysAnalysis -pubsub {
+QActor robot context ctxFinalSysAnalysis {
 	Plan init normal [
 		println("Robot started");
 		javaRun it.unibo.robot.mbotConnTcp.initClientConn()

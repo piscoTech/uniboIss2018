@@ -27,7 +27,7 @@ const config = {
 	},
 	{
 		name: "middle2",
-		centerPosition: { x: 0.5, y: 0.75},
+		centerPosition: { x: 0.5, y: 0.25},
 		size: { x: 0.01, y: 0.48}
 	},
 	{
