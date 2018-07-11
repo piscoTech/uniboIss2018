@@ -134,6 +134,8 @@ QActor cleaner context ctxFinalSysAnalysis {
 		size(8,8).
 //		tileSize(1000).
 		tileSize(200).
+		
+//		useMap.
 	}
 	
 	Plan init normal [
@@ -183,7 +185,19 @@ QActor cleaner context ctxFinalSysAnalysis {
 	switchTo waitStart
 	
 	Plan waitStart [
-		demo loadStatus;
+		[!? useMap] {
+			println("Loading saved map...");
+			demo consult('./map.pl');
+			[!? status(cell(_,_),_)] {
+				println("Loaded saved map")
+			} else {
+				println("No saved map, loaded empty map");
+				demo loadStatus
+			}
+		} else {
+			println("Loaded empty map");
+			demo loadStatus
+		};
 		demo loadInitialPosition;
 		demo visitCurrent;
 		
@@ -281,6 +295,8 @@ QActor cleaner context ctxFinalSysAnalysis {
 		
 		[!? jobDone] {
 			println("Room is now clean!");
+			javaRun it.unibo.cleaner.mapper.saveMap();
+			
 			selfMsg stopAutoClean : stopAutoClean(true);
 			forward webguiexecutor -m stopAutoClean : stopAutoClean(true)
 		} else {

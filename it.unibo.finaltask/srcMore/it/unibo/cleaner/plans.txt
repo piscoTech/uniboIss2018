@@ -5,7 +5,7 @@ plan(1,cleanKBNextPositions, sentence(-  nextPos( pos( cell( X,Y),D)) ,not here 
 plan(1,cleanKBMisc, sentence(true,removeRule( overrideCleanStatus ),'','' ))
 plan(2,cleanKBMisc, sentence(true,removeRule( ignoreSonar ),'','' ))
 plan(3,cleanKBMisc, sentence(true,move(print("Cleaned KB (4/4)")),'','' ))
-plan(1,waitStart, sentence(true,move(solve,loadStatus,0,""),'','' ))
+plan(1,waitStart, sentence( useMap,not here StateMoveNormal,'','' ))
 plan(2,waitStart, sentence(true,move(solve,loadInitialPosition,0,""),'','' ))
 plan(3,waitStart, sentence(true,move(solve,visitCurrent,0,""),'','' ))
 plan(4,waitStart, sentence(true,move(print("Auto cleaner ready to start...")),'','' ))

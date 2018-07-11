@@ -21,14 +21,12 @@ visitCurrent :- curPos(pos(cell(X,Y), _)), visit(cell(X,Y)).
 visit(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), 1)).
 visit(cell(_,_)).
 % Mark the specified cell as an obstacle
-obstacle(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), p)).
-obstacle(cell(X,Y)) :- retract(status(cell(X, Y), p)), !, assertz(status(cell(X, Y), x)).
+obstacle(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), x)).
 obstacle(cell(_,_)).
 
 % Whether there are no obstacle in the given cell
 isWalkable(cell(X,Y)) :- status(cell(X, Y), 0).
 isWalkable(cell(X,Y)) :- status(cell(X, Y), 1).
-isWalkable(cell(X,Y)) :- status(cell(X, Y), p).
 
 % Save what cell will become the current position after a move is completed
 registerNext(pos(cell(X,Y), D)) :- replaceRule(nextPos(pos(cell(Xo,Yo), Do)), nextPos(pos(cell(X,Y), D))).
@@ -42,13 +40,11 @@ nextIsObstacle :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D))
 % -Set from QActor side when ignoring parts of the room due to obstacles
 fullyExplored :- overrideCleanStatus, !.
 fullyExplored :- status(cell(_,_), 0), !, fail.
-fullyExplored :- status(cell(_,_), p), !, fail.
 fullyExplored.
 
 % Decide towards which cell the robot should move to: a non-cleaned one if 'fullyExplored' is false, the bottom-right corner otherwise
 establishGoal(cell(Xt,Yt)) :- fullyExplored, !, size(Xm, Ym), Xt is Xm-1, Yt is Ym-1, output(goal(Xt,Yt)).
 establishGoal(cell(X,Y)) :- status(cell(X,Y), 0), output(goal(X,Y)).
-establishGoal(cell(X,Y)) :- status(cell(X,Y), p), output(goal(X,Y)).
 
 % Whether the robot should stop moving automatically, i.e. 'fullyExplored' is true and the robot is in the bottom-right corner
 jobDone :- fullyExplored, curPos(pos(cell(X,Y), _)), Xt is X+1, Yt is Y+1, size(Xt, Yt).

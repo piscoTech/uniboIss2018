@@ -191,10 +191,36 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("waitStart",-1);
 	    	String myselfName = "waitStart";  
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?useMap" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"Loading saved map...\"";
+	    	println( temporaryStr );  
+	    	parg = "consult(\"./map.pl\")";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?status(cell(_,_),_)" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"Loaded saved map\"";
+	    	println( temporaryStr );  
+	    	};//actionseq
+	    	}
+	    	else{ {//actionseq
+	    	temporaryStr = "\"No saved map, loaded empty map\"";
+	    	println( temporaryStr );  
 	    	parg = "loadStatus";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
-	    	parg = "loadInitialPosition";
+	    	};//actionseq
+	    	}};//actionseq
+	    	}
+	    	else{ {//actionseq
+	    	temporaryStr = "\"Loaded empty map\"";
+	    	println( temporaryStr );  
+	    	parg = "loadStatus";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	};//actionseq
+	    	}parg = "loadInitialPosition";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
 	    	parg = "visitCurrent";
@@ -392,6 +418,7 @@ public abstract class AbstractCleaner extends QActor {
 	    	{//actionseq
 	    	temporaryStr = "\"Room is now clean!\"";
 	    	println( temporaryStr );  
+	    	it.unibo.cleaner.mapper.saveMap( myself  );
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"stopAutoClean(X)","stopAutoClean(true)", guardVars ).toString();
 	    	sendMsg("stopAutoClean",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"stopAutoClean(X)","stopAutoClean(true)", guardVars ).toString();
