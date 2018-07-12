@@ -22,14 +22,18 @@ visit(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y)
 visit(cell(X,Y)) :- retract(status(cell(X, Y), p)), !, assertz(status(cell(X, Y), 1)).
 visit(cell(_,_)).
 % Mark the specified cell as an obstacle
-obstacle(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), p)).
+obstacle(cell(X,Y)) :- retract(status(cell(X, Y), 0)), !, assertz(status(cell(X, Y), t)).
 obstacle(cell(X,Y)) :- retract(status(cell(X, Y), p)), !, assertz(status(cell(X, Y), x)).
 obstacle(cell(_,_)).
+% Mark the specified cell with a detected obstacle as a possible obstacle to be re-checked
+recheck(cell(X,Y)) :- retract(status(cell(X, Y), t)), !, assertz(status(cell(X, Y), p)).
+recheck(cell(_,_)).
 
 % Whether there are no obstacle in the given cell
 isWalkable(cell(X,Y)) :- status(cell(X, Y), 0).
 isWalkable(cell(X,Y)) :- status(cell(X, Y), 1).
-isWalkable(cell(X,Y)) :- status(cell(X, Y), p).
+isWalkable(cell(X,Y)) :- status(cell(X, Y), p). % Possible obstacles are walkable to allow re-check
+% -Detected obstacles are non-walkable to give time to moving obstacles to go away
 
 % Save what cell will become the current position after a move is completed
 registerNext(pos(cell(X,Y), D)) :- replaceRule(nextPos(pos(cell(Xo,Yo), Do)), nextPos(pos(cell(X,Y), D))).
@@ -39,11 +43,12 @@ actualizeNext :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D)))
 % Delete the upcoming cell data is removed and marks it as an obstacle
 nextIsObstacle :- nextPos(pos(cell(X,Y), D)), retract(nextPos(pos(cell(X,Y), D))), obstacle(cell(X,Y)).
 
-% Whether all non-obstacle cells have been cleaned, i.e. there is no non-cleaned and non-obstacle cells
+% Whether all non-obstacle cells have been cleaned
 % -Set from QActor side when ignoring parts of the room due to obstacles
 fullyExplored :- overrideCleanStatus, !.
-fullyExplored :- status(cell(_,_), 0), !, fail.
-fullyExplored :- status(cell(_,_), p), !, fail.
+fullyExplored :- status(cell(_,_), 0), !, fail. % There must be no non-cleaned cell...
+fullyExplored :- status(cell(_,_), p), !, fail. % No possible obstacles...
+fullyExplored :- status(cell(_,_), t), !, fail. % And no detected obstacles
 fullyExplored.
 
 % Decide towards which cell the robot should move to: a non-cleaned one if 'fullyExplored' is false, the bottom-right corner otherwise

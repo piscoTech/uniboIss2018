@@ -135,7 +135,7 @@ QActor cleaner context ctxFinalSysAnalysis {
 //		tileSize(1000).
 		tileSize(200).
 		
-//		useMap.
+		useMap.
 	}
 	
 	Plan init normal [
@@ -216,11 +216,18 @@ QActor cleaner context ctxFinalSysAnalysis {
 				selfMsg stopAutoClean : stopAutoClean(true);
 				forward webguiexecutor -m stopAutoClean : stopAutoClean(true)
 			} else {
-				// Some parts of the room are unreachable due to obstacle and not cleanable
-				// Ignore them and go to the end point
-				println("Ignoring some parts of the room due to obstacles, going to the end point");
-				addRule overrideCleanStatus;
-				selfMsg retryAutoClean : retryAutoClean(true)
+				[!? status(cell(_, _), t)] {
+					// What can be done with the first round of obstacle detection is done
+					// Mark all detected obstacles as possible obstacles to allow re-check
+					println("Re-checking detected obstacle to see if they've gone away");
+					selfMsg moveFinished : moveFinished(rechecks) 
+				} else {
+					// Some parts of the room are unreachable due to obstacle and not cleanable
+					// Ignore them and go to the end point
+					println("Ignoring some parts of the room due to obstacles, going to the end point");
+					addRule overrideCleanStatus;
+					selfMsg retryAutoClean : retryAutoClean(true)
+				}
 			}
 		};
 		
@@ -231,7 +238,8 @@ QActor cleaner context ctxFinalSysAnalysis {
 		whenTime 1 -> stopClean, // Triggered when findMove is successful but no move are planned, i.e. already on the goal cell
 		whenMsg stopAutoClean -> cleanKBStatus,
 		whenMsg retryAutoClean -> cleanPortion,
-		whenMsg startAutoClean -> doMove
+		whenMsg startAutoClean -> doMove,
+		whenMsg moveFinished -> recheckObstacles
 	
 	Plan doMove [
 		removeRule ignoreSonar;
@@ -277,6 +285,14 @@ QActor cleaner context ctxFinalSysAnalysis {
 //		whenTime 1300 -> doMove,
 		whenTime 201 -> doMove,
 		whenMsg stopAutoClean -> cleanKBStatus
+		
+	Plan recheckObstacles [
+		demo recheck(cell(X,Y));
+		
+		[not !? status(cell(_,_), t)] addRule recheckObstacles
+	]
+	switchTo [?? recheckObstacles] cleanPortion
+	finally repeatPlan
 	
 	Plan abortPlannedMoves [
 		[?? move(A, pos(cell(X,Y),D))]

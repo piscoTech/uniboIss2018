@@ -145,6 +145,7 @@ actorPrintln( X ):- actorobj(A), text_term(XS,X), A  <- println( XS ).
 defaultPosition( pos( cell( 0,0),n)).
 size( 8,8).
 tileSize( 200).
+useMap.
 /*
 ------------------------------------------------------------------------
 testex :- actorPrintln( testex ),

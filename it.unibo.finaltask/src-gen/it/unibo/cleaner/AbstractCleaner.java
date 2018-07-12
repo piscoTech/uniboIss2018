@@ -65,6 +65,7 @@ public abstract class AbstractCleaner extends QActor {
 	    	stateTab.put("doMove",doMove);
 	    	stateTab.put("registerObstacle",registerObstacle);
 	    	stateTab.put("waitMoveCompletion",waitMoveCompletion);
+	    	stateTab.put("recheckObstacles",recheckObstacles);
 	    	stateTab.put("abortPlannedMoves",abortPlannedMoves);
 	    	stateTab.put("stopClean",stopClean);
 	    }
@@ -261,6 +262,15 @@ public abstract class AbstractCleaner extends QActor {
 	    	};//actionseq
 	    	}
 	    	else{ {//actionseq
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?status(cell(_,_),t)" )) != null ){
+	    	{//actionseq
+	    	temporaryStr = "\"Re-checking detected obstacle to see if they've gone away\"";
+	    	println( temporaryStr );  
+	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"moveFinished(X)","moveFinished(rechecks)", guardVars ).toString();
+	    	sendMsg("moveFinished",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
+	    	};//actionseq
+	    	}
+	    	else{ {//actionseq
 	    	temporaryStr = "\"Ignoring some parts of the room due to obstacles, going to the end point\"";
 	    	println( temporaryStr );  
 	    	temporaryStr = "overrideCleanStatus";
@@ -268,6 +278,7 @@ public abstract class AbstractCleaner extends QActor {
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"retryAutoClean(X)","retryAutoClean(true)", guardVars ).toString();
 	    	sendMsg("retryAutoClean",getNameNoCtrl(), QActorContext.dispatch, temporaryStr ); 
 	    	};//actionseq
+	    	}};//actionseq
 	    	}};//actionseq
 	    	}if( (guardVars = QActorUtils.evalTheGuard(this, " !?move(_,_)" )) != null ){
 	    	temporaryStr = QActorUtils.unifyMsgContent(pengine,"startAutoClean(X)","startAutoClean(true)", guardVars ).toString();
@@ -277,8 +288,8 @@ public abstract class AbstractCleaner extends QActor {
 	    	println( temporaryStr );  
 	    	//bbb
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
-	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("cleanPortion"), stateTab.get("doMove") }, 
-	          new String[]{"true","M","stopAutoClean", "true","M","retryAutoClean", "true","M","startAutoClean" },
+	          new StateFun[]{stateTab.get("cleanKBStatus"), stateTab.get("cleanPortion"), stateTab.get("doMove"), stateTab.get("recheckObstacles") }, 
+	          new String[]{"true","M","stopAutoClean", "true","M","retryAutoClean", "true","M","startAutoClean", "true","M","moveFinished" },
 	          1, "stopClean" );//msgTransition
 	    }catch(Exception e_cleanPortion){  
 	    	 println( getName() + " plan=cleanPortion WARNING:" + e_cleanPortion.getMessage() );
@@ -380,6 +391,29 @@ public abstract class AbstractCleaner extends QActor {
 	    	 QActorContext.terminateQActorSystem(this); 
 	    }
 	    };//waitMoveCompletion
+	    
+	    StateFun recheckObstacles = () -> {	
+	    try{	
+	     PlanRepeat pr = PlanRepeat.setUp(getName()+"_recheckObstacles",0);
+	     pr.incNumIter(); 	
+	    	String myselfName = "recheckObstacles";  
+	    	parg = "recheck(cell(X,Y))";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
+	    	if( (guardVars = QActorUtils.evalTheGuard(this, " not !?status(cell(_,_),t)" )) != null )
+	    	{
+	    	temporaryStr = "recheckObstacles";
+	    	temporaryStr = QActorUtils.substituteVars(guardVars,temporaryStr);
+	    	addRule( temporaryStr );  
+	    	}
+	    	//switchTo cleanPortion
+	        switchToPlanAsNextState(pr, myselfName, "cleaner_"+myselfName, 
+	              "cleanPortion",true, false, " ??recheckObstacles"); 
+	    }catch(Exception e_recheckObstacles){  
+	    	 println( getName() + " plan=recheckObstacles WARNING:" + e_recheckObstacles.getMessage() );
+	    	 QActorContext.terminateQActorSystem(this); 
+	    }
+	    };//recheckObstacles
 	    
 	    StateFun abortPlannedMoves = () -> {	
 	    try{	

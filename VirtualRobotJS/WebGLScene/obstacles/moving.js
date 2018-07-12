@@ -20,16 +20,16 @@ const config = {
 	],
 	movingObstacles: [{
 		name: "moving-obstacle",
-		position: { x: .9, y: .6 },
+		position: { x: .25, y: .6 },
 		directionAxis: { x: true, y: false },
-		speed: -0.005,
+		speed: -0.0008,
 		range: 1000
 	}],
 	staticObstacles: [
 	{
 		name: "middle",
-		centerPosition: { x: 0.33, y: 0.63},
-		size: { x: 0.01, y: 0.7}
+		centerPosition: { x: 0.24, y: 0.47},
+		size: { x: 0.01, y: 0.4}
 	},
 	{
 		name: "wallUp",
