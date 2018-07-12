@@ -24,6 +24,7 @@ var app              = express();
 
 var externalActuator = true; // When true, the application logic is external to the server;
 var withAuth         = true;
+var debugging		 = false;	
 
 // view engine setup;
 app.set('views', path.join(__dirname, 'appServer', 'viewRobot'));	 
@@ -56,6 +57,11 @@ if(withAuth){
 	
 	setUpAuth();
 }
+
+app.use(function(req, res, next) {
+	res.locals.debugging = debugging;
+	next();
+});
 
 /*
  * ====================== AUTH ================

@@ -15,23 +15,28 @@
 		<div class="container">
 			<h1>Robot Control</h1>
 			Welcome <b><%= currentUser.name() %></b>.
-			<table style="background-color: #d9f7f3; margin: 0 auto;">
+			<div style="text-align: center; margin-bottom: 20px">
+				<b>Auto cleaner</b><br>
+				<form action="/robot/actions/commands/applGo" method="post" style='display: inline-block; width: 100px'>
+					<input type="submit" value="Start" class="btn btn-primary btn-block">
+				</form>
+				<form action="/robot/actions/commands/applStop" method="post" style='display: inline-block; width: 100px'>
+					<input type="submit" value="Stop" class="btn btn-primary btn-block">
+				</form>
+			</div>
+			<% if(debugging) { %>
+			<div style="text-align: center">
+				<b>Manual controls</b>
+			</div>
+			<table style="margin: 0 auto;">
 				<tr>
-					<td align="center">   
-						<form action="/robot/actions/commands/applGo" method="post">
-							<input type="submit" value="Appl" class="btn btn-primary btn-block">
-						</form>						
-					</td>
-					<td align="center">
+					<td width='100'></td>
+					<td width='100' align="center">
 						<form action="/robot/actions/commands/w" method="post">
 							<input type="submit" value="Forward" class="btn btn-primary btn-block">
 						</form>
 					</td>
-					<td align="center">
-						<form action="/robot/actions/commands/applStop" method="post">
-							<input type="submit" value="StopAppl" class="btn btn-primary btn-block">
-						</form>						
-					</td>
+					<td width='100'></td>
 				</tr>
 				<tr>
 					<td align="center">
@@ -60,6 +65,7 @@
 					<td align="center"> </td>
 				</tr>
 			</table>
+			<% } %>
 		</div>
 		<span id="display">Display area</span>
 	</body>
