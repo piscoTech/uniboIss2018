@@ -17,10 +17,10 @@
 			Welcome <b><%= currentUser.name() %></b>.
 			<div style="text-align: center; margin-bottom: 20px">
 				<b>Auto cleaner</b><br>
-				<form action="/robot/actions/commands/applGo" method="post" style='display: inline-block; width: 100px'>
+				<form action="/robot/actions/commands/appl/go" method="post" style='display: inline-block; width: 100px'>
 					<input type="submit" value="Start" class="btn btn-primary btn-block">
 				</form>
-				<form action="/robot/actions/commands/applStop" method="post" style='display: inline-block; width: 100px'>
+				<form action="/robot/actions/commands/appl/halt" method="post" style='display: inline-block; width: 100px'>
 					<input type="submit" value="Stop" class="btn btn-primary btn-block">
 				</form>
 			</div>

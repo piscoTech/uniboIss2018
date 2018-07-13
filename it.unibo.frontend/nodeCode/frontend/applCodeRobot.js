@@ -60,6 +60,8 @@ if(withAuth){
 
 app.use(function(req, res, next) {
 	res.locals.debugging = debugging;
+	if(!withAuth)
+		res.locals.currentUser = {name: function() { return "anonymous"}};
 	next();
 });
 
@@ -147,12 +149,12 @@ app.get('/', function(req, res) {
 /*
  * ====================== COMMANDS ================
  */
-app.post("/robot/actions/commands/applGo", function(req, res) {
+app.post("/robot/actions/commands/appl/go", function(req, res) {
 	console.info("START THE APPLICATION");
 	if( externalActuator ) delegate( "x(go)", "application", req, res);
 });
 
-app.post("/robot/actions/commands/applStop", function(req, res) {
+app.post("/robot/actions/commands/appl/halt", function(req, res) {
 	console.info("STOP THE APPLICATION");
 	if( externalActuator ) delegate( "x(halt)", "application", req, res);
 });	
