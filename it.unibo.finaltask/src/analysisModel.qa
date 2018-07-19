@@ -388,8 +388,8 @@ QActor robot context ctxFinalSysAnalysis {
 
 QActor lampadapter context ctxFinalSysAnalysis -pubsub {
 	Rules {
-//		enabled.
-		configHue("192.168.1.85", 3).
+		enabled.
+		configHue("192.168.1.2", 3).
 	}
 	
 	Plan init normal [

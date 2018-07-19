@@ -19,7 +19,7 @@ public class hueClient {
 	private static String evId = null;
 	private static String hueBridgeAddr = "192.168.1.85";
 	private static String lampId = "3";
-	private static String hueCmdPrefix = "http://" + hueBridgeAddr + "/api/2GgKjwy9JAlW57Dl7qJ1ZRgEpWvjZi6ghN6hesAC/";
+	private static String hueCmdPrefix;
 	private static CloseableHttpClient httpclient = null;
 
 	public static void setQaCtx(QActor qa, String curevId, String ip, String lId) {
@@ -27,6 +27,8 @@ public class hueClient {
 		evId = curevId;
 		hueBridgeAddr = ip.replaceAll("[\"']+", "");
 		lampId = lId.replaceAll("[\"']+", "");
+		
+		hueCmdPrefix = "http://" + hueBridgeAddr + "/api/2GgKjwy9JAlW57Dl7qJ1ZRgEpWvjZi6ghN6hesAC/";
 	}
 
 	public static void setOff(QActor qa) {
@@ -45,6 +47,7 @@ public class hueClient {
 			if (httpclient == null)
 				httpclient = HttpClients.createDefault();
 			HttpPut request = new HttpPut(url);
+			System.out.println(url);
 			StringEntity params = new StringEntity(data, "UTF-8");
 			params.setContentType("application/json");
 			request.addHeader("content-type", "application/json");
@@ -98,16 +101,16 @@ public class hueClient {
 	/*
 	 * Just to test
 	 */
-	// public static void main(String args[]) throws InterruptedException {
-	// sendGet(null, "lights/" + lampId);
-	// for (int i = 1; i <= 10; i++) {
-	// setOff(null);
-	// Thread.sleep(3000);
-	// setOn(null);
-	// Thread.sleep(3000);
-	// }
-	// setOff(null);
-	// }
+	public static void main(String args[]) throws InterruptedException {
+		sendGet(null, "lights/" + lampId);
+		for (int i = 1; i <= 10; i++) {
+			setOff(null);
+			Thread.sleep(1000);
+			setOn(null);
+			Thread.sleep(1000);
+		}
+		setOff(null);
+	}
 }
 /*
  * http://www.mio-ip.it/

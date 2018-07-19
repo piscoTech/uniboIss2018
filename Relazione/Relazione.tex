@@ -23,11 +23,11 @@ Il robot lavora solo se la temperatura dell'ambiente non è superiore ad una sog
 
 Durante l'attività di pulizia, il robot deve far lampeggiare una lampada a led Hue, ovvero una lampadina, connessa alla rete, che può essere controllata in luminosità, accensione, spegnimento e colore attraverso API RESTful.
 
-Durante l'attività di pulizia, il robot deve inoltre aver cura di evitare ostacoli fissi presenti nella stanza. Si suppone che non vi siano ostacoli posti di fronte (entro una certa soglia) ai due sonar.
+Durante l'attività di pulizia, il robot deve inoltre aver cura di evitare ostacoli, fissi e mobili, presenti nella stanza. Si suppone che non vi siano ostacoli posti di fronte (entro una certa soglia) ai due sonar.
 
 Il robot deve fermarsi solo quando ha finito di pulire tutto.
 
-L'attività di pulizia deve terminare se:
+L'attività di pulizia deve terminare anche se:
 \begin{itemize}
 \item l'utente autorizzato invia il comando \texttt{STOP} dalla console;
 \item la temperatura dell'ambiente supera la soglia prefissata;
@@ -54,7 +54,7 @@ Per gestire la logica applicativa si rende necessario un componente dedicato che
 Per ricevere informazioni su temperatura ambientale e ora corrente occorre realizzare due sensori, un termometro e un orologio, che possano inviare le rispettive informazioni. Poiché queste interessano solamente l'attività di pulizia automatica, possono essere intercettate solamente dal componente che si occupa della logica applicativa e usarle per aggiornare lo stato interno e terminare, se è il caso, l'attività di pulizia.
 
 \subsection{Lampada Hue}
-Per gestire la lampada che lampeggia occorre identificare un'entità che alterni ciclicamente tra due stati accendendo e spegnendo la lampada, cosa perfettamente adatta a un attore QActor, per non interferire con le normali operazioni della logica applicativa risulta conveniente modellare questo \textit{blinker} come un attore separato controllato dalla logica applicativa e a sua volta controlla la lampada direttamente.
+Per gestire la lampada che lampeggia occorre identificare un'entità che alterni ciclicamente tra due stati accendendo e spegnendo la lampada, cosa perfettamente adatta a un attore QActor. Per non interferire con le normali operazioni della logica applicativa risulta conveniente modellare questo \textit{blinker} come un attore separato controllato dalla logica applicativa e che a sua volta controlla la lampada direttamente.
 
 \subsection{Pulizia e ostacoli}
 Per guidare il robot nella pulizia della maggiore area possibile della stanza sarebbe possibile stabilire a priori un percorso che il robot segue in maniera indiscriminata, ma questo funziona solo se la morfologia della stanza è completamente nota, cosa non verificata in quanto, sebbene si conosca la forma della stanza, non si sa se e dove sono degli ostacoli.
@@ -63,21 +63,40 @@ Per gestire questo problema può venire in aiuto l'intelligenza artificiale divi
 
 L'algoritmo di ricerca porterà nativamente a evitare gli ostacoli e a rilevare se questi sono insuperabili impedendo di raggiungere l'\texttt{end-point} portando a uno stop anticipato alle operazioni di pulizia.
 
-La rilevazione degli ostacoli richiede un lavoro ulteriore, rilevando quando il robot non riesce a portare a termine una delle mosse pianificate per pulire, cioè quando il sonar che ha a bordo segnala qualcosa. Quando il robot si sta muovendo in avanti e rileva che ha un ostacolo vuol dire che non può raggiungere il tile davanti a lui, questo tile sarà quindi marcato come ostacolo, il robot dovrà tornare indietro per riallinearsi con i tile ``virtuali" quindi annullare tutte le mosse pianificate e fare un nuovo piano. 
+La rilevazione degli ostacoli richiede un lavoro ulteriore, rilevando quando il robot non riesce a portare a termine una delle mosse pianificate per pulire, cioè quando il sonar che ha a bordo segnala qualcosa. Quando il robot si sta muovendo in avanti e rileva che ha un ostacolo di fronte vuol dire che non può raggiungere il tile davanti a lui, questo tile sarà quindi marcato come ostacolo, il robot dovrà tornare indietro per riallinearsi con i tile ``virtuali" quindi annullare tutte le mosse pianificate e fare un nuovo piano. 
 
 La rilevazione degli ostacoli porta automaticamente anche a realizzare una mappa della stanza man mano che il robot prova a pulire. L'algoritmo di ricerca che guida il robot dovrà anche aver cura di ignorare quelle parti della stanza che sono isolate da ostacoli e non pulirle perché irraggiungibili e andare comunque all'\texttt{end-point}.
+
+\subsubsection{Ostacoli mobili}
+Per gestire gli ostacoli mobili occorre ricontrollare tutti quei tile per cui è stato rilevato un ostacolo. A questo proposito l'algoritmo di ricerca viene in aiuto aggiungendo ai già usati stati dei tile (\texttt{0} per una cella non esplorata e non pulita, \texttt{1} per una cella libera e pulita e \texttt{x} per una cella con ostacolo) altri due stati: \texttt{t} per ostacolo rilevato e \texttt{p} per possibile ostacolo.
+
+Durante la pulizia quando il robot rileva un ostacolo, secondo il processo già descritto, non marcherà più il tile come \texttt{x} ma come \texttt{t} e procederà a pulire le celle \texttt{0} evitando di passare su tile \texttt{t}. Quando non ci sono altri tile \texttt{0} (o quelli presenti non sono raggiungibili), tutti i tile \texttt{t} diventano marcati come \texttt{p} e il robot ora continuerà a pulire cercando di raggiungere i tile \texttt{0} e \texttt{p}, su cui ora può muoversi. Se riesce ad andare su questi tile saranno come prima marcati come \texttt{1}, se invece non riesce ad andare su un tile \texttt{p} questo sarà finalmente marcato come \texttt{x} (se non riesce ad andare su uno \texttt{0} sarà marcato come \texttt{t} ripetendo il processo).
+
+\subsection{Mappatura}
+Quando il robot completa la pulizia naturalmente fermandosi all'\texttt{end-point} salverà in un file la mappa generata, quindi dove sono gli ostacoli e marcando le altre celle come \texttt{0}. Nel caso il robot sia fermato durante la pulizia (manualmente o a causa dei sensori) oppure non termini all'\texttt{end-point} a causa di ostacoli insuperabili la mappa non sarà salvata perché non è stato possibile completarla o si è verificata una situazione imprevista.
+
+Quando il robot viene avviato o si riconfigura per ripartire a pulire potrà caricare la mappa generata e quindi sapere già dove si trovano gli ostacoli, permettendo di semplificare il lavoro in quando non deve mapparli.
+
+\subsection{Testing}
+Il file generato contenente la mappa può risultare utile anche a fini di testing, infatti può essere aperto per controllare che la mappa generata sia quella attesa oppure non sia stata generata se è stata creata una situazione di stop non naturale.
+
+Il testing può essere automatizzato sfruttando un attore che cancelli un'eventuale mappa residua, carichi la scena di test secondo le specifiche del robot virtuale in uso, (ri)avvi il robot virtuale e quindi mandi eventi di controllo per avviare la pulizia come se fosse la console controllata dall'utente.
+
+Per facilitare questo compito la mappa generata dovrebbe mantenere tutti i possibili stati dei tile, non solo \texttt{0} e \texttt{x} e operare il filtraggio di questi stati al momento del caricamento. L'attore di testing dovrà anche essere notificato dell'avvio e stop della pulizia, oppure sfruttare gli eventi di controllo del blinker che vengono emessi contestualmente a ciò.
 
 \section{Progetto}
 Per mantenere lo stato del sistema ci si può appoggiare al supporto nativo del Prolog da parte di QActor per modellare una base di conoscenza che tenga traccia di temperatura e ora corrente, se si sta facendo la pulizia e qualunque altra informazione utile come la soglia di temperatura e l'intervallo di tempo in cui si può lavorare.
 
 Non avendo a disposizione una realizzazione, fisica o virtuale, in grado di interagire in qualche modo con il sistema per come lo si è individuato finora, si è scelto di realizzarli da zero come sensori virtuali direttamente integrati con l'infrastruttura MQTT. È stato realizzato anche un mock per la lampada Hue per poter testare il funzionamento del robot quando quella fisica non è accessibile. Questo mock interagisce direttamente con i messaggi di controllo scambiati via MQTT, ma per controllare quella fisica occorre realizzare un adapter che intercetti i comandi e li traduca in opportune chiamate RESTful.
 
-L'interazione tra le parti del sistema è gestita attraverso messaggi scambiati attraverso l'infrastruttura MQTT. Questi messaggi sono scambiati con una struttura particolare affinché possa interagire con l'infrastruttura QActor potendo quindi avere un comportamento dispatch, indirizzato ad un attore particolare, o evento, cioè diretto a tutti. Non volendo vincolarsi troppo ai nomi degli attori che compongono il sistema e per supportare anche contemporaneamente più attuatori, in particolare la lampada Hue fisica e il suo mock, risulta comodo scegliere di lavorare con eventi, limitando l'uso di dispatch solamente tra attori, in cui il linguaggio QActor garantisce il controllo di errori a livello semantico per i nomi dei destinatari. I dispatch verranno impiegati dell'adapter del robot virtuale che quando riceve i comandi di \texttt{START} e \texttt{STOP} ne delega la gestione all'attore che si occupa della logica applicativa.
+L'interazione tra le parti del sistema è gestita attraverso messaggi scambiati attraverso l'infrastruttura MQTT. Questi messaggi sono scambiati con una struttura particolare affinché possa interagire con l'infrastruttura QActor potendo quindi avere un comportamento dispatch, indirizzato ad un attore particolare, o evento, cioè diretto a tutti. Non volendo vincolarsi troppo ai nomi degli attori che compongono il sistema e per supportare anche contemporaneamente più attuatori, in particolare la lampada Hue fisica e il suo mock, risulta comodo scegliere di lavorare con eventi, limitando l'uso di dispatch solamente tra attori, in cui il linguaggio QActor garantisce il controllo di errori a livello semantico per i nomi dei destinatari. I dispatch verranno impiegati in particolare dell'adapter del robot virtuale che quando riceve i comandi di \texttt{START} e \texttt{STOP} ne delega la gestione all'attore che si occupa della logica applicativa.
+
+L'uso dei dispatch risulta anche preferibile in quanto l'integrazione di QActor con MQTT non è completa e in alcuni casi l'uso di eventi via MQTT è causa di alcuni bug. Gli eventi (via MQTT) saranno quindi usati per interagire con sensori, attuatori e console, privilegiando invece dei dispatch (scambiati quindi direttamente dall'architettura QActor) per comunicazione diretta tra gli attori.
 
 In quest'ottica, l'invio di nuovi dati da parte dei sensori avviene attraverso l'emissione di un evento \texttt{sensorEvent(ORIGIN, PAYLOAD)} che specifica il sensore coinvolto e le informazioni relative. In maniera analoga si ha l'evento \texttt{ctrlEvent(TARGET, PAYLOAD)} che specifica un attuatore e le informazioni per l'azione da compiere, questo sarà emesso solamente dalla logica applicativa e indirizzato alla lampada Hue per i comandi di spegnimento e accensione. L'evento di controllo sarà quindi essere intercettato direttamente dal mock per controllare la lampada virtuale e dal già citato adapter che si occuperà di tradurre l'evento in chiamate RESTful.
 
 \subsection{Lampada Hue}
-Per quanto riguarda lo stato della lampada, la logica applicativa non è interessata a sapere se questa è accesa o spenta, ma se questa sta lampeggiando o no. Lo stato mantenuto sarà quindi quello del blinker. Sarà l'attore blinker a inviare \texttt{ctrlEvent} per la lampada, mentre la logica applicativa ne invierà uno per il blincker.
+Per quanto riguarda lo stato della lampada, la logica applicativa non è interessata a sapere se questa è accesa o spenta, ma se questa sta lampeggiando o no. Lo stato mantenuto sarà quindi quello del blinker. Sarà l'attore blinker a inviare \texttt{ctrlEvent} per la lampada, mentre la logica applicativa invierà un \texttt{ctrlMsg} (con la stessa semantica di \texttt{ctrlEvent} ma scambiato come dispatch) al blinker.
 
 \section{Log}
 
@@ -88,6 +107,9 @@ Ci siamo concentrati sull'analisi dei requisiti e del problema a livello general
 Supporto delle stato del robot come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
 
 \subsection{3° sprint -- 04-11/07/2018}
-Pulizia di tutta la stanza e gestione degli ostacoli.
+Pulizia di tutta la stanza e gestione degli ostacoli fissi: rilevati, mappati ed aggirati.
+
+\subsection{4° sprint -- 11-19/07/2018}
+Gestione degli ostacoli mobili e uso della mappa generata. Pianificazione del testing.
 
 \end{document}
