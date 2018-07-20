@@ -294,6 +294,11 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("waitMove",-1);
 	    	String myselfName = "waitMove";  
+	    	temporaryStr = "ignoreSonar";
+	    	removeRule( temporaryStr );  
+	    	parg = "actualizeNext";
+	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
+	    	solveGoal( parg ); //sept2017
 	    	//bbb
 	     msgTransition( pr,myselfName,"cleaner_"+myselfName,false,
 	          new StateFun[]{stateTab.get("doMove"), stateTab.get("waitCleanKB") }, 
@@ -309,11 +314,6 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("doMove",-1);
 	    	String myselfName = "doMove";  
-	    	temporaryStr = "ignoreSonar";
-	    	removeRule( temporaryStr );  
-	    	parg = "actualizeNext";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
 	    	parg = "printStatus";
 	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
 	    	solveGoal( parg ); //sept2017
@@ -453,11 +453,6 @@ public abstract class AbstractCleaner extends QActor {
 	    try{	
 	     PlanRepeat pr = PlanRepeat.setUp("stopClean",-1);
 	    	String myselfName = "stopClean";  
-	    	temporaryStr = "ignoreSonar";
-	    	removeRule( temporaryStr );  
-	    	parg = "actualizeNext";
-	    	//QActorUtils.solveGoal(myself,parg,pengine );  //sets currentActionResult		
-	    	solveGoal( parg ); //sept2017
 	    	if( (guardVars = QActorUtils.evalTheGuard(this, " !?jobDone" )) != null ){
 	    	{//actionseq
 	    	temporaryStr = "\"Room is now clean!\"";

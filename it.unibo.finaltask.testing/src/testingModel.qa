@@ -115,13 +115,14 @@ QActor cleaner context ctxFinalSysTesting {
 		whenMsg startAutoClean -> waitMove,
 		whenMsg moveFinished -> recheckObstacles
 		
-	Plan waitMove [] transition stopAfter 36000000
+	Plan waitMove [
+		removeRule ignoreSonar;
+		demo actualizeNext
+	] transition stopAfter 36000000
 		whenMsg nextStep -> doMove,
 		whenMsg stopAutoClean -> waitCleanKB
 	
 	Plan doMove [
-		removeRule ignoreSonar;
-		demo actualizeNext;
 		demo printStatus;
 		
 		javaRun it.unibo.cleaner.cleanerTimer.startTimer();
@@ -181,9 +182,6 @@ QActor cleaner context ctxFinalSysTesting {
 	finally repeatPlan
 		
 	Plan stopClean [
-		removeRule ignoreSonar;
-		demo actualizeNext;
-		
 		[!? jobDone] {
 			println("Room is now clean!");
 			

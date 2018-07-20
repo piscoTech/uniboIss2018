@@ -49,10 +49,41 @@ public class Map {
 		if (oth instanceof Map) {
 			Map othMap = (Map) oth;
 
-			return rows == othMap.rows && cols == othMap.cols && data.equals(othMap.data);
+			if (rows == othMap.rows && cols == othMap.cols) {
+				for (int i = 0; i < rows; i++) {
+					for (int j = 0; j < cols; j++) {
+						if(data[i][j] != othMap.data[i][j])
+							return false;
+					}
+				}
+				
+				return true;
+			}
 		}
 
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		String res = "[";
+		for (int i = 0; i < data.length; i++) {
+			char[] row = data[i];
+			if (i > 0)
+				res += ",";
+
+			res += "[";
+			for (int j = 0; j < row.length; j++) {
+				if (j > 0)
+					res += ",";
+
+				res += row[j];
+			}
+			res += "]";
+		}
+		res += "]";
+
+		return res;
 	}
 
 }
