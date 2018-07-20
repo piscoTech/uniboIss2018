@@ -55,3 +55,7 @@ Il testing è limitato solo a una parte del progetto, si rimanda a [`it.unibo.fi
 ## Commit
 
 Fai attenzione che Eclipse non modifichi i file `.gitignore` eliminando la riga `.classpath`: i file `.classpath` _**NON**_ devono essere committati, questi contengono infatti la configurazione del _Build Path_ e vanno configurati inizialmente come specificato sopra. Se Eclipse propone questa modifica del `.gitignore` ripristina il file alla versione precedente.
+
+## Demo
+
+[![Download demo video](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/DemoThumb.png)](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Demo.mp4)
