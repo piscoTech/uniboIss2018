@@ -115,7 +115,7 @@ L'algoritmo vero e proprio è rappresentato dal predicato \texttt{findMove}/4 e 
 		\item nel caso di un movimento in avanti il confronto considera solamente la cella, ignorando l'orientamento del robot.
 	\end{itemize}
 	\item Gli stati futuri filtrati sono ora ordinati con \texttt{sort}/3 secondo l'euristica crescente (il costo di cammino sarà uguale perché vengono tutti dallo stesso stato) ottenendo il risultato in \texttt{SuccFilterSort}.
-	\item Gli stati futuri sono ora combinati con il cammino che gli ha generati (mantenendo anche l'ordinamento) utilizzando il predicato \texttt{multiAppend}/3 che  restituisce i nuovi nodi in \texttt{Paths}.
+	\item Gli stati futuri sono ora combinati con il cammino che li ha generati (mantenendo anche l'ordinamento) utilizzando il predicato \texttt{multiAppend}/3 che  restituisce i nuovi nodi in \texttt{Paths}.
 	\item I nodi aperti non considerati e i nuovi nodi aperti appena generati sono unificati in un'unica lista utilizzando il predicato \texttt{mergeSorted}/4 che restituisce in \texttt{Lnext} tutti i nodi aperti ordinati secondo la funzione di costo crescente.
 	\item L'algoritmo re-invoca se stesso passando la nuova lista di nodi aperti e chiusi ma lo stesso goal.
 \end{enumerate}
@@ -153,7 +153,7 @@ Ci siamo concentrati sull'analisi dei requisiti e del problema a livello general
 \end{itemize}
 
 \subsection{2° sprint -- 27/06-04/07/2018}
-Supporto delle stato delle risorse come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
+Supporto dello stato delle risorse come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
 
 \begin{itemize}
 	\ttfamily
