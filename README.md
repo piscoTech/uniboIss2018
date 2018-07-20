@@ -37,6 +37,9 @@ npm install
 ### Xcode configuration
 _Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – Mock.app` la sua configurazione viene omessa, ma l'unica cosa da fare è scaricare i pacchetti usando CocoaPods._
 
+### Test
+Il testing è limitato solo a una parte del progetto, si rimanda a [`it.unibo.finaltask.testing`](https://github.com/piscoTech/uniboIss2018/tree/master/it.unibo.finaltask.testing) per i dettagli relativi al setup.
+
 ## Avvio del sistema
 
 1. Avvia (in qualsiasi ordine)
