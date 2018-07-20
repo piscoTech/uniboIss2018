@@ -17,7 +17,7 @@ import it.unibo.qactors.QActorContext;
 import it.unibo.qactors.QActorUtils;
 import it.unibo.qactors.akka.QActor;
 
-public class CleanerTests {
+public class TestCleaner {
 
 	private static QActor cleaner;
 
