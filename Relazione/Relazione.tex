@@ -78,11 +78,11 @@ Quando il robot completa la pulizia naturalmente fermandosi all'\texttt{end-poin
 Quando il robot viene avviato o si riconfigura per ripartire a pulire potrà caricare la mappa generata e quindi sapere già dove si trovano gli ostacoli, permettendo di semplificare il lavoro in quando non deve mapparli.
 
 \subsection{Testing}
-Il file generato contenente la mappa può risultare utile anche a fini di testing, infatti può essere aperto per controllare che la mappa generata sia quella attesa oppure non sia stata generata se è stata creata una situazione di stop non naturale.
+La parte più complessa del progetto è il QActor \texttt{cleaner} che si occupa di gestire i movimenti del robot sulla base di una mappa generata durante la pulizia e consultata utilizzato l'algoritmo A* (\prtref{prt:astar_prolog}).
 
-Il testing può essere automatizzato sfruttando un attore che cancelli un'eventuale mappa residua, carichi la scena di test secondo le specifiche del robot virtuale in uso, (ri)avvi il robot virtuale e quindi mandi eventi di controllo per avviare la pulizia come se fosse la console controllata dall'utente.
+Per semplificare il testing si è quindi isolato questo attore in un progetto dedicato (si veda il progetto \texttt{it.unibo.finaltask.testing}). Inoltre l'attore è stato leggermente modificato affinché le mosse non siano eseguite automaticamente in successione (come accade nel progetto principale) ma richiedono l'invio di un messaggio di controllo che ne scateni l'esecuzione, questo garantisce un controllo più granulare alla suite di testing che può svolgere il suo lavoro in maniera semplificata, in maniera analoga il reset allo stato in attesa di partire è manuale e scatenato dall'invio dello stesso messaggio. Questo è realizzato aggiungendo due stati (\texttt{waitMove} e \texttt{waitCleanKB}) per cui si può tornare al funzionamento nominale rendendo la transizione corrispondente al messaggio non più dipendente da questo, ma una $\varepsilon$-mossa.
 
-Per facilitare questo compito la mappa generata dovrebbe mantenere tutti i possibili stati dei tile, non solo \texttt{0} e \texttt{x} e operare il filtraggio di questi stati al momento del caricamento. L'attore di testing dovrà anche essere notificato dell'avvio e stop della pulizia, oppure sfruttare gli eventi di controllo del blinker che vengono emessi contestualmente a ciò.
+La suite di testing procede quindi a caricare solamente l'attore (che non si muoverà in un ambiente né reale né virtuale) e quindi invierà opportuni messaggi di inizio e fine della pulizia automatica oltre che ai messaggi di controllo per permettere l'esecuzione delle mosse e la simulazione degli eventi del sonar montato sul robot. L'invio di tutti i messaggi sarà intercalato da un controllo dello stato del robot se sta pulendo o meno (usando un fatto ad hoc nella base di conoscenza) e da un check progressivo della mappa che conosce il robot dopo ogni singolo step (si veda la classe \texttt{it.unibo.cleaner.TestCleaner} all'interno della cartella \texttt{test}).
 
 \section{Progetto}
 Per mantenere lo stato del sistema ci si può appoggiare al supporto nativo del Prolog da parte di QActor per modellare una base di conoscenza che tenga traccia di temperatura e ora corrente, se si sta facendo la pulizia e qualunque altra informazione utile come la soglia di temperatura e l'intervallo di tempo in cui si può lavorare.
@@ -98,18 +98,94 @@ In quest'ottica, l'invio di nuovi dati da parte dei sensori avviene attraverso l
 \subsection{Lampada Hue}
 Per quanto riguarda lo stato della lampada, la logica applicativa non è interessata a sapere se questa è accesa o spenta, ma se questa sta lampeggiando o no. Lo stato mantenuto sarà quindi quello del blinker. Sarà l'attore blinker a inviare \texttt{ctrlEvent} per la lampada, mentre la logica applicativa invierà un \texttt{ctrlMsg} (con la stessa semantica di \texttt{ctrlEvent} ma scambiato come dispatch) al blinker.
 
+\section{Implementazione di A*}\label{prt:astar_prolog}
+L'algoritmo A* utilizzato è stato implementato ad hoc in Prolog (si veda il file \texttt{astar.pl} nel progetto principale o di testing contenente anche altri predicati di contorno per inizializzare la base di conoscenza). In questa sezione non si pretende di spiegare il funzionamento e la teoria alla base dell'algoritmo, ma di illustrare come questo sia stato implementato.
+
+Il punto di accesso all'algoritmo è il predicato \texttt{findMove}/1 che per prima cosa decide verso quale cella muoversi utilizzando \texttt{establishGoal}/1. Questo predicato indicherà il tile in basso a destra se la stanza è stata interamente pulita altrimenti (nell'ordine) una cella marcata come \texttt{0} o una \texttt{p}.
+La stanza è considerata pulita se la mappa contiene solamente celle \texttt{1} e \texttt{x} oppure se è presente il fatto \texttt{overrideCleanStatus}, aggiunto da \texttt{cleaner} quando rileva che le celle \texttt{0} rimanenti sono inaccessibili a causa di ostacoli.
+
+Una volta stabilito il goal, \texttt{findMove}/1 ricava la posizione corrente nota dal robot e invoca l'algoritmo A* vero e proprio fornendo come lista dei nodi aperti lo stato (cioè cella e orientamento del robot) corrente, questa è anche la lista dei nodi chiusi. Un nodo aperto non è solo lo stato, ma è rappresentato da una lista di coppie mossa-stato risultante (la mossa per lo stato di partenza è nulla) garantendo così la ricostruzione del percorso pianificato. La lista dei nodi aperti viene mantenuta ordinata in ordine crescente secondo la funzione di costo calcolata assegnando costo unitario a ogni azione e utilizzando la distanza di Manhattan come euristica.
+
+L'algoritmo vero e proprio è rappresentato dal predicato \texttt{findMove}/4 e funziona secondo un ciclo iterativo: se il primo nodo aperto (e quindi il più promettente) corrisponde al goal allora si è trovato il percorso ottimo, altrimenti:
+\begin{enumerate}
+	\item Si considera lo stato del primo nodo aperto e si invoca su questo la funzione successore ottenendo in \texttt{Succ} una lista di possibili stati futuri scelti tra movimento in avanti di una cella oppure rotazione a destra o sinistra di \ang{90}. Il movimento in avanti è restituito solamente se la cella di fronte al robot esiste e non è marcata come ostacolo \texttt{x} o \texttt{t}.
+	\item Gli stati restituiti sono filtrati usando \texttt{filterVisited}/4 ottenendo in \texttt{SuccFilter} solo quegli stati che non sono già stati visitati e in \texttt{NewVis} la nuova lista di nodi chiusi. Il filtraggio discrimina a seconda di quale mossa lo genera:
+	\begin{itemize}
+		\item nel caso di una rotazione il confronto con la lista dei nodi chiusi considera sia la cella che l'orientamento;
+		\item nel caso di un movimento in avanti il confronto considera solamente la cella, ignorando l'orientamento del robot.
+	\end{itemize}
+	\item Gli stati futuri filtrati sono ora ordinati con \texttt{sort}/3 secondo l'euristica crescente (il costo di cammino sarà uguale perché vengono tutti dallo stesso stato) ottenendo il risultato in \texttt{SuccFilterSort}.
+	\item Gli stati futuri sono ora combinati con il cammino che gli ha generati (mantenendo anche l'ordinamento) utilizzando il predicato \texttt{multiAppend}/3 che  restituisce i nuovi nodi in \texttt{Paths}.
+	\item I nodi aperti non considerati e i nuovi nodi aperti appena generati sono unificati in un'unica lista utilizzando il predicato \texttt{mergeSorted}/4 che restituisce in \texttt{Lnext} tutti i nodi aperti ordinati secondo la funzione di costo crescente.
+	\item L'algoritmo re-invoca se stesso passando la nuova lista di nodi aperti e chiusi ma lo stesso goal.
+\end{enumerate}
+
+Il piano generato da A* viene quindi utilizzato da \texttt{registerMoves}/1 che salva nella base di conoscenza le mosse nell'ordine con cui devono essere eseguite.
+
+\subsection{Predicati ausiliari}
+L'algoritmo e \texttt{cleaner} che lo usa sfruttano anche dei predicati ausiliari per gestire la base di conoscenza. Di seguito sono introdotti brevemente, maggiori dettagli possono essere trovati direttamente nei commenti a corredo di ogni predicato all'interno del codice:
+\begin{itemize}
+	\item \texttt{h}/3: calcola l'euristica per una certa cella relativamente a un certo goal.
+	\item \texttt{rotate}/2: supporto alla funzione successore \texttt{next}/2, si occupa di generare solamente le rotazioni.
+	\item \texttt{jobDone}: determina se il robot deve fermarsi autonomamente sulla base di \texttt{R-End}.
+	\item \texttt{loadStatus}: utilizzando \texttt{loadStatus}/1 e \texttt{loadCol}/2 popola la base di conoscenza con una mappa vuota (tutte le celle a \texttt{0}).
+	\item \texttt{loadInitialPosition}: registra la posizione corrente iniziale del robot all'interno della base di conoscenza.
+	\item \texttt{printStatus}: utilizzando \texttt{printRow}/1 e \texttt{listify}/3 stampa su standard output la mappa corrente salvata nella base di conoscenza.
+	\item \texttt{visit}/1: segna la cella specificata come \texttt{1} (solo se \texttt{0} o \texttt{p}). \texttt{visitCurrent} invoca questo predicato passando la posizione corrente.
+	\item \texttt{obstacle}/1: segna la cella specificata come ostacolo. Una cella \texttt{0} diventa \texttt{t} e una cella \texttt{p} diventa \texttt{x}.
+	\item \texttt{recheck}/1: segna la cella specificata come \texttt{p} solamente se era marcata come \texttt{t}. Questo predicato viene invocato dal robot su tutte le celle quando non ha più celle \texttt{0} da pulire innescando il ricontrollo degli ostacoli rilevati per pulire dove fossero presenti degli ostacoli mobili.
+	\item \texttt{isWalkable}/1: se è possibile transitare sulla cella specificata. Questo è vero solo per le celle \texttt{1}, \texttt{0} e \texttt{p}, quest'ultimo caso permette di ricontrollare le celle segnate come possibili ostacoli in combinazione con \texttt{establishGoal}/1.
+	\item \texttt{registerNext}/1: registra la cella specificata come stato futuro durante l'esecuzione di una mossa.
+	\item \texttt{actualizeNext}: distrugge un eventuale stato futuro che diventa lo stato corrente, la cella corrispondente viene marcata come \texttt{1}.
+	\item \texttt{nextIsObstacle}: distrugge un eventuale stato futuro e la cella corrispondente viene segnata come ostacolo con \texttt{obstacle}/1. Il robot viene lasciato nella posizione corrente.
+\end{itemize}
+
 \section{Log}
+
+Per i progetti parziali relativi ai singoli sprint si faccia riferimento ai corrispondenti tag/release.
 
 \subsection{1° sprint -- 23-27/06/2018}
 Ci siamo concentrati sull'analisi dei requisiti e del problema a livello generale per individuare le parti che abbiamo già a disposizione da progetti svolti a lezione. Queste parti sono state assemblate assieme a un mock per i dispositivi hardware (sensori e attuatori) richiesti per avere un primo prototipo funzionante, ma senza logica applicativa, del sistema.
 
+\begin{itemize}
+	\ttfamily
+	\item R-Start
+\end{itemize}
+
 \subsection{2° sprint -- 27/06-04/07/2018}
-Supporto delle stato del robot come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
+Supporto delle stato delle risorse come valore di temperatura e ora corrente, pulizia come movimento avanti e indietro per un tempo indeterminato per controllare lo stop manuale o per mancata verifica delle condizioni di temperatura/ora.
+
+\begin{itemize}
+	\ttfamily
+	\item R-TempOk
+	\item R-TimeOk
+	\item R-BlinkHue
+	\item R-Stop
+	\item R-TempKo
+	\item R-TimeKo
+\end{itemize}
 
 \subsection{3° sprint -- 04-11/07/2018}
 Pulizia di tutta la stanza e gestione degli ostacoli fissi: rilevati, mappati ed aggirati.
 
+\begin{itemize}
+	\ttfamily
+	\item R-FloorClean
+	\item R-AvoidFix
+	\item R-Obstacle
+	\item R-End
+	\item R-Map
+\end{itemize}
+
 \subsection{4° sprint -- 11-19/07/2018}
-Gestione degli ostacoli mobili e uso della mappa generata. Pianificazione del testing.
+Gestione degli ostacoli mobili e uso della mappa generata.
+
+\begin{itemize}
+	\ttfamily
+	\item R-AvoidMobile
+\end{itemize}
+
+\subsection{5° sprint -- 20/07/2018}
+Testing automatico del QActor \texttt{cleaner}.
 
 \end{document}
