@@ -47,7 +47,7 @@ _Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – 
 	- Il frontend server usando `startFrontEnd.sh`
 2. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
 
-È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`) e viene interrotta la connessione TCP che controlla il robot, richiedendo quindi di riavviare l'applicazione QActor per poter funzionare correttamente.
+È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`), se l'applicazione non era in fase di pulizia automatica quando la scena è stata ricaricata questa si è automaticamente riconfigurata per poter ripartire all'invio di un nuovo comando *Start*.
 
 ## Commit
 
