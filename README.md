@@ -37,6 +37,9 @@ npm install
 ### Xcode configuration
 _Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – Mock.app` la sua configurazione viene omessa, ma l'unica cosa da fare è scaricare i pacchetti usando CocoaPods._
 
+### Test
+Il testing è limitato solo a una parte del progetto, si rimanda a [`it.unibo.finaltask.testing`](https://github.com/piscoTech/uniboIss2018/tree/master/it.unibo.finaltask.testing) per i dettagli relativi al setup.
+
 ## Avvio del sistema
 
 1. Avvia (in qualsiasi ordine)
@@ -47,8 +50,12 @@ _Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – 
 	- Il frontend server usando `startFrontEnd.sh`
 2. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
 
-È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`) e viene interrotta la connessione TCP che controlla il robot, richiedendo quindi di riavviare l'applicazione QActor per poter funzionare correttamente.
+È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`), se l'applicazione non era in fase di pulizia automatica quando la scena è stata ricaricata questa si è automaticamente riconfigurata per poter ripartire all'invio di un nuovo comando *Start*.
 
 ## Commit
 
 Fai attenzione che Eclipse non modifichi i file `.gitignore` eliminando la riga `.classpath`: i file `.classpath` _**NON**_ devono essere committati, questi contengono infatti la configurazione del _Build Path_ e vanno configurati inizialmente come specificato sopra. Se Eclipse propone questa modifica del `.gitignore` ripristina il file alla versione precedente.
+
+## Demo
+
+[![Download demo video](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/DemoThumb.png)](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Demo.mp4)
