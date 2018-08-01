@@ -53,10 +53,10 @@ To manage the application logic, a dedicated component is required that receives
 
 To receive information on ambient temperature and current time, two sensors, a thermometer and a clock, must be made to send the respective information. Since these affect only the automatic cleaning activity, they can only be intercepted by the component that takes care of the application logic and use them to update the internal status and end, if necessary, the cleaning activity.
 
-\subsection{Hue Lamp}
+\subsection{Hue lamp}
 To manage the flashing lamp we need to identify an entity that cyclically alternates between two states by turning the lamp on and off, which is perfectly suited to a QActor actor. In order not to interfere with the normal operations of the application logic it is convenient to model this \textit{blinker} as a separate actor controlled by the application logic and which controls the lamp directly.
 
-\subsection{Cleaning and Obstacles}
+\subsection{Cleaning and obstacles}
 To guide the robot in cleaning the largest possible area of ​​the room would be possible to previously establish a path that the robot follows indiscriminately, but this only works if the morphology of the room is completely known, which is not verified because, although we know the shape of the room, it is not known if and where there are obstacles.
 
 To deal with this problem artificial intelligence can help by dividing the room into tiles and using a search algorithm to reach all those to be cleaned and when the task is completed, \texttt{end-point} in front of \texttt{sonar2} .
@@ -67,7 +67,7 @@ The detection of obstacles requires further work, detecting when the robot fails
 
 The detection of obstacles also automatically leads to a map of the room as the robot tries to clean. The search algorithm that guides the robot will also have to take care to ignore those parts of the room that are obstructed by obstacles and not clean them because they are unreachable and still go to \texttt{end-point}.
 
-\subsubsection{Moving obstacles}
+\subsubsection{Mobile obstacles}
 To manage the mobile obstacles it is necessary to check again all the tiles for which an obstacle has been detected. In this regard the search algorithm comes in handy adding to the already used tile states (\texttt{0} for an unexplored and not clean cell, \texttt{1} for a free and clean cell and \texttt{x} for an obstacle cell) two other states: \texttt{t} for detected obstacle and \texttt{p} for possible obstruction.
 
 During cleaning when the robot detects an obstacle, according to the process already described, it will no longer mark the tile as \texttt{x} but as \texttt{t} and proceed to clean the cells \texttt{0} avoiding passing on tile \texttt{t}. When there are no other tiles \texttt{0} (or those present are not reachable), all the tiles \texttt{t} become marked as \texttt{p} and the robot will now continue to clean trying to reach the tiles \texttt{0} and \texttt{p}, on which it can now move. If it manages to go on these tiles will be first marked as \texttt{1}, if instead it fails to go on a tile \texttt{p} this will finally be marked as \texttt{x} (if it can not go on one \texttt{0} will be marked as \texttt{t} by repeating the process).
@@ -95,7 +95,7 @@ The use of dispatches is also preferable because the integration of QActor with 
 
 From this point of view, the sending of new data by the sensors occurs through the emission of a \texttt{sensorEvent(ORIGIN, PAYLOAD)} event that specifies the sensor involved and the related information. Similarly, the \texttt{ctrlEvent(TARGET, PAYLOAD)} event specifies an actuator and the information for the action to be performed, this will be issued only by the application logic and directed to the Hue lamp for shutdown commands and power on. The control event will then be intercepted directly by the mock to control the virtual lamp and by the already mentioned adapter that will take care of translating the event into RESTful calls.
 
-\subsection{Hue Lamp}
+\subsection{Hue lamp}
 Regarding the status of the lamp, the application logic is not interested in knowing if it is on or off, but whether it is flashing or not. The maintained state will therefore be that of the blinker. The blinker actor will send \texttt{ctrlEvent} for the lamp, while the application logic will send a \texttt{ctrlMsg} (with the same semantics of \texttt{ctrlEvent} but exchanged as dispatch) to the blinker.
 
 \section{Implementazione di A*}\label{prt:astar_prolog}
