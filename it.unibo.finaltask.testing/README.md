@@ -1,21 +1,21 @@
 # Test
 
-Il testing è limitato al core del problema, cioè il QActor `cleaner`. Il testing è effettuato isolando questo componente in un progetto dedicato contenuto in questa cartella con opportune modifiche per facilitare il testing. Si rimanda alla [documentazione](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Relazione.pdf), sezione 2.4 per le considerazioni effettuate.
+Testing is limited the core problem, the QActor `cleaner`. The testing is executed by isolating this component in a dedicated project cotained in this folder, with some changes to ease the testing process. See [documentations](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Relazione.pdf), section 2.4, for the choices that have been made.
 
-## Setup iniziale
-Dopo aver importato il progetto in questa cartella su Eclipse (il workspace principale del progetto vero e proprio va benissimo) aprire un terminale in questa cartella ed eseguire, avendo cura di usare le [stesse accortezze](https://github.com/piscoTech/uniboIss2018#setup-iniziale-macos) già citate per il progetto principale, il comando
+## Initial Setup
+After importing the project in this folder in Eclipse (the workspace for the main project is fine), open a terminal in this folder and execute, by following [the same advices](https://github.com/piscoTech/uniboIss2018#initial-setup-macos) given for the main project, the command
 
 ```bash
 gradle -b build_ctxFinalSysTesting.gradle eclipse
 ```
 
 ## Testing
-A questo punto è possibile eseguire i test utilizzando JUnit selezionando tutte le classi (una sola) all'interno della cartella `test`. Nel caso si vogliano anche i report sulla copertura del codice o si preferisca usare Gradle, si può usare da terminale il comando
+At this point it's possible to execute the tests by using JUnit and selecting all classes (just one) inside the `test` folder. If reports about code coverage or Gradle is preferred, the following command is available
 
 ```bash
 gradle -b build_ctxFinalSysTesting.gradle test
 ```
 
-**Nota:** I test impiegano ~4 minuti a eseguire a causa del fatto che il robot viene fatto muovere con gli stessi tempi come se fosse in una stanza vera (o virtuale).
+**Note:** The tests takes ~4 minutes to execute as the robot is moved with the same timings as if it were in a real (or virtual) room.
 
-**Nota:** Non è necessario predisporre alcun ambiente prima di lanciare i test, i test provvederanno a tutto da soli.
+**Note:** It is not required to setup and environment to launch the tests, they will do so on their own.

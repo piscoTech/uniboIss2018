@@ -1,60 +1,64 @@
 # Ingegneria dei Sistemi Software M
 
-Repository del tema finale del corso di Ingegneria dei Sistemi Software M
+Repository for final task for course in Engineering of Software Systems at University of Bologna (A.Y. 2017-2018)
 
-## Setup iniziale (macOS)
+## Initial Setup (macOS)
 
-Installa i due plug-in per QActor di Eclipse forniti dal prof, Gradle e Node.js, quindi installa MongoDB e Mosquitto via HomeBrew usando
+Instal the two [QActor plug-ins](https://github.com/anatali/iss2018/tree/master/it.unibo.issMaterial/plugins) for Eclipse provided by the professor, Gradle and Node.js, then istall MongoDB and Mosquitto via HomeBrew by using
 
 ```bash
 brew install mosquitto
 brew install mongodb
 ```
 
-Crea un workspace Eclipse nella root di questa repository e importa i due progetti `it.unibo.finaltask` e `it.unibo.frontend`. Apri un terminale nella cartella `it.unibo.finaltask` ed esegui
+Create an Eclipse workspace in the root of this repository and import the projects `it.unibo.finaltask` and `it.unibo.frontend`. Open a terminal in the `it.unibo.finaltask` folder and execute
 
 ```bash
 gradle -b build_ctxFinalSysAnalysis.gradle eclipse
 ```
 
-Potrebbero essere necessarie più esecuzioni di questo comando, nel caso apri la configurazione del _Build Path_ e assicurati che non ci siano cartelle duplicate. Apri la configurazione del _Build Path_ di `it.unibo.frontend` ed elimina tutte le cartelle dal tab _Source_. A questo punto Eclipse non dovrebbe segnalare alcun errore, solo qualche warning.
+More than one execution of this command may be necessary, in that case open the _Build Path_ configuration and make sure no folders are duplicated. Open the _Build Path_ configuration of `it.unibo.frontend` and delete all folders from the _Source_ tab. At this point Eclipse should not display any error, only some warnings.
 
-Per avviare facilmente i vari server creiamo degli alias inserendo queste righe nel file `~/.bash_profile`
+To easily starts the many servers create aliases by adding these lines in  the `~/.bash_profile` file
 
 ```bahs
 alias mosquitto='/usr/local/opt/mosquitto/sbin/mosquitto -c /usr/local/etc/mosquitto/mosquitto.conf'
 alias mongodb='mongod --dbpath "/my/custom/path/to/mongodb"'
 ```
 
-Per il secondo alias assicurati di aver creato la cartella nel percorso specificato.
+For the second one make sure to create a folder in the given path.
 
-Installa tutti i package richiesti da Node.js nelle cartelle `it.unibo.frontend/nodeCode/frontend`, `VirtualRobotJS/WebGLScene` e `VirtualRobotJS/server` usando, in ognuna di queste, il comando
+Install all packages required by Node.js in the folders `it.unibo.frontend/nodeCode/frontend`, `VirtualRobotJS/WebGLScene` and `VirtualRobotJS/server` by using, in each of these, the command
 
 ```bash
 npm install
 ```
 
 ### Xcode configuration
-_Siccome Xcode è usato da una sola persona per costruire il file `ISS 2018 – Mock.app` la sua configurazione viene omessa, ma l'unica cosa da fare è scaricare i pacchetti usando CocoaPods._
+The frameworks required to works with MQTT are available via CocoaPods, after installi CocoaPods itself, dowload them by executing in the `iss2018` folder the command
+
+```bash
+pod install
+```
 
 ### Test
-Il testing è limitato solo a una parte del progetto, si rimanda a [`it.unibo.finaltask.testing`](https://github.com/piscoTech/uniboIss2018/tree/master/it.unibo.finaltask.testing) per i dettagli relativi al setup.
+Testing is limited to a single part of the project, see [`it.unibo.finaltask.testing`](https://github.com/piscoTech/uniboIss2018/tree/master/it.unibo.finaltask.testing) for setup details.
 
-## Avvio del sistema
+## System Startup
 
-1. Avvia (in qualsiasi ordine)
-	- Mosquitto usando l'alias `mosquitto`
-	- Il robot virtuale usando `startRobot.sh`
-	- MongoDB usando l'alias `mongodb`
-	- I mock per l'hardware avviando `ISS 2018 – Mock.app`
-	- Il frontend server usando `startFrontEnd.sh`
-2. Avvia l'applicazione QActor facendo partire la classe `it.unibo.ctxfinalSysAnalysis` in `src-gen` nel progetto `it.unibo.finaltask`
+1. Start (in any order)
+	- Mosquitto with the alis `mosquitto`
+	- The virtual robot with `startRobot.sh`
+	- MongoDB with the alias `mongodb`
+	- The frontend server with `startFrontEnd.sh`
+2. Start hardware mocks with `ISS 2018 – Mock.app`
+3. Start the QActor application by launching the class `it.unibo.ctxfinalSysAnalysis` in `src-gen` in the `it.unibo.finaltask` project
 
-È ora possibile visualizzare il robot virtuale all'indirizzo http://localhost:8081 e il frontend server all'indirizzo http://localhost:3000. Ricaricando la pagina del robot virtuale viene ripristinata la configurazione iniziale della scena (file `VirtualRobotJS/WebGLScene/sceneConfig.js`), se l'applicazione non era in fase di pulizia automatica quando la scena è stata ricaricata questa si è automaticamente riconfigurata per poter ripartire all'invio di un nuovo comando *Start*.
+It is now possible to view the virtual robot at http://localhost:8081 and the frontend at http://localhost:3000. By reloading the virtual robot page the initial scene will be reset (file `VirtualRobotJS/WebGLScene/sceneConfig.js`), if the application was **not** in the auto-cleaning phase when the the scene has been reloaded, the QActors have automatically reconfigured themselves the restart at the sending of a new *Start* command.
 
 ## Commit
 
-Fai attenzione che Eclipse non modifichi i file `.gitignore` eliminando la riga `.classpath`: i file `.classpath` _**NON**_ devono essere committati, questi contengono infatti la configurazione del _Build Path_ e vanno configurati inizialmente come specificato sopra. Se Eclipse propone questa modifica del `.gitignore` ripristina il file alla versione precedente.
+Make sure Eclipse doesn't change the  `.gitignore` files by deleting the line `.classpath`: the `.classpath` files must _**NOT**_ by committed, they contain the _Build Path_ configuration and have to be configured has specified above. If Eclipse suggest this change in `.gitignore`, restore the file the the previous version.
 
 ## Demo
 
