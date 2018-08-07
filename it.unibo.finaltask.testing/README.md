@@ -1,6 +1,6 @@
 # Test
 
-Testing is limited the core problem, the QActor `cleaner`. The testing is executed by isolating this component in a dedicated project cotained in this folder, with some changes to ease the testing process. See [documentations](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Relazione.pdf), section 2.4, for the choices that have been made.
+Testing is limited the core problem, the QActor `cleaner`. The testing is executed by isolating this component in a dedicated project cotained in this folder, with some changes to ease the testing process. See [documentation](https://github.com/piscoTech/uniboIss2018/blob/master/Docs/Report.pdf), section 2.4, for the choices that have been made.
 
 ## Initial Setup
 After importing the project in this folder in Eclipse (the workspace for the main project is fine), open a terminal in this folder and execute, by following [the same advices](https://github.com/piscoTech/uniboIss2018#initial-setup-macos) given for the main project, the command
