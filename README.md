@@ -1,6 +1,6 @@
 # Ingegneria dei Sistemi Software M
 
-Repository for final task for course in Engineering of Software Systems at University of Bologna (A.Y. 2017-2018)
+Repository for final task for course in Ingegneria dei Sistemi Software M at University of Bologna (A.Y. 2017-2018)
 
 ## Initial Setup (macOS)
 
