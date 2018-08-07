@@ -62,4 +62,4 @@ Make sure Eclipse doesn't change the  `.gitignore` files by deleting the line `.
 
 ## Demo
 
-[![Download demo video](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/DemoThumb.png)](https://github.com/piscoTech/uniboIss2018/blob/master/Documentazione/Demo.mp4)
+[![Download demo video](https://github.com/piscoTech/uniboIss2018/blob/master/Docs/DemoThumb.png)](https://github.com/piscoTech/uniboIss2018/blob/master/Docs/Demo.mp4)
